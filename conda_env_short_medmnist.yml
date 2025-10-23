@@ -1,0 +1,26 @@
+name: daop_medmnist
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  # PyTorch e CUDA (Ajustado para 2.4.1 que funciona na sua GPU)
+  - python=3.10
+  - pytorch=2.4.1
+  - torchvision=0.19.1
+  - torchaudio=2.4.1
+  - pytorch-cuda=12.1
+
+  # Pacotes de Machine Learning e Utilities
+  - albumentations
+  - seaborn
+  - matplotlib-base
+  - numpy
+  - opencv
+  - pandas
+  - scikit-image
+  - scikit-learn
+
+  # Pacotes base
+  - pip

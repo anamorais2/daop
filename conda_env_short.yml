@@ -1,0 +1,21 @@
+name: daself
+channels:
+  - defaults
+dependencies:
+  - matplotlib-base=3.9.2
+  - numpy=1.26.4
+  - opencv=4.10.0
+  - pandas=2.2.2
+  - pip=24.2
+  - python==3.12.2
+  - scikit-image=0.23.2
+  - scikit-learn=1.5.1
+  - pympler
+  - memory_profiler
+  - pytorch-cuda==12.1
+  - pytorch
+  - torchaudio
+  - torchvision
+  - albumentations
+  - seaborn
+  - conda-minify
