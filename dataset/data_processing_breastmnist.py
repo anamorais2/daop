@@ -2,6 +2,7 @@ import os
 import torch
 import torchvision.transforms as transforms
 import albumentations as A
+import numpy as np # Importar NumPy para manipulação de array
 from albumentations.pytorch import ToTensorV2
 from medmnist import INFO, Evaluator, dataset as medmnist_dataset
 
@@ -21,7 +22,7 @@ DataClass = getattr(medmnist_dataset, INFO_BREAST['python_class'])
 class BreastMNISTAlbumentations(DataClass):
     """
     Wrapper para o BreastMNIST que permite aplicar transformações Albumentations 
-    diretamente no `__getitem__`.
+    diretamente no `__getitem__` e garante 3 canais.
     """
     def __init__(self, transform=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -33,15 +34,21 @@ class BreastMNISTAlbumentations(DataClass):
         # MedMNIST retorna: (imagem, rótulo).
         img, target = self.imgs[index], self.labels[index]
 
-        # Converte para 3 canais se a imagem for em escala de cinzentos (28x28x1),
-        # pois muitas transformações Albumentations requerem 3 canais.
-        # BreastMNIST é 1 canal, mas se o pipeline DAOP (RotNet) espera 3 canais, 
-        # é mais seguro forçar a replicação do canal, se necessário.
-        if img.shape[-1] == 1:
+        # CORREÇÃO CRÍTICA: FORÇAR 3 CANAIS (H, W, 3) PARA ALBUMENTATIONS
+        # O Albumentations requer (H, W, C) para transformações como Equalize, Rotate, etc.
+        
+        # 1. Verificar se a imagem tem apenas 2 dimensões (H, W) ou 3 dimensões (H, W, 1)
+        if len(img.shape) == 2:
+            # Se for (H, W), empilhamos 3 vezes ao longo de uma nova dimensão (H, W, 3)
+            img = np.stack([img] * 3, axis=2)
+        elif img.shape[-1] == 1:
+            # Se for (H, W, 1), replicamos o canal 3 vezes (H, W, 3)
             img = img.repeat(3, axis=-1)
+        
+        # Agora img é garantidamente (H, W, 3)
 
         if self.transform is not None:
-            # Aplica as transformações Albumentations
+            # Aplica as transformações Albumentations, que agora recebem 3 canais
             transformed = self.transform(image=img)
             img = transformed['image']
 
@@ -116,7 +123,7 @@ def load_dataset(individual, config):
 # ==============================================================================
 
 def create_data_loaders(trainset_pretext, trainset_downstream, testset_pretext, testset_downstream, config):
-  
+    
     print("Creating data loaders")
 
     # O DAOP já define a variável device
