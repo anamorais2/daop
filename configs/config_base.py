@@ -22,6 +22,9 @@ NUM_CLASSES_MEDMNIST = 2
 
 config = {}
 
+
+config['model'] = net_models_torch.TrainResNet18 # ResNet18 OR ResNet50 
+
 if config['model'] == net_models_torch.TrainResNet18:
     RESNET_FLAG = 'resnet18'
 else:
@@ -45,6 +48,7 @@ config['dataset'] = DATA_FLAG
 config['dim'] = (28, 28, 1)
 config['num_classes'] = NUM_CLASSES_MEDMNIST
 config['num_classes_downstream'] = config['num_classes']
+config['num_classes_pretext'] = 4
 config['cache_folder'] = f"cache_{DATA_FLAG}_torch"
 
 
@@ -76,7 +80,6 @@ config['extended_pretrained_pretext_model'] = None
 
 # model training configs
 config['framework'] = 'torch'
-config['model'] = net_models_torch.TrainResNet18 # ResNet18 OU ResNet50 
 config['finetune_backbone'] = False
 config['base_epochs'] = 20
 config['epochs'] = config['base_epochs']
