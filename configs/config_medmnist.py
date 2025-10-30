@@ -1,4 +1,4 @@
-import configs.config_base_resnet18 as config_base
+import configs.config_base as config_base
 
 import dataset.data_processing_breastmnist as data_processing_medmnist
 import DA.data_augmentation_albumentations as data_augmentation_albumentations
