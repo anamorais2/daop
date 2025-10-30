@@ -47,7 +47,6 @@ config['num_classes'] = NUM_CLASSES_MEDMNIST
 config['num_classes_downstream'] = config['num_classes']
 config['cache_folder'] = f"cache_{DATA_FLAG}_torch"
 
-config['fix_pretext_da'] = ROTNET_DA
 
 # ATENÇÃO: SUBSTITUIR ESTAS FUNÇÕES
 # Estas funções devem estar no seu novo ficheiro data_processing_medmnist.py
@@ -66,7 +65,7 @@ config['device'] = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device {config['device']}")
 # config['shuffle_dataset'] = False     # shuffle with sampler
 config['evolution_type'] = "simultaneous"   # "same"/"simultaneous"
-#config['fix_pretext_da'] = None     # ROTNET_DA                                    -> VERIFICAR ISTO 
+config['fix_pretext_da'] = ROTNET_DA                                    # ROTNET_DA --------------------- DA
 config['fix_downstream_da'] = None      # ROTNET_DA
 # config['base_pretrained_pretext_model'] = os.path.join("models", "rn_pretext_0.pt")
 # config['pretrained_pretext_model'] = config['base_pretrained_pretext_model']
