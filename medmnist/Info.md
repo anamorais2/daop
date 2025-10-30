@@ -147,3 +147,5 @@ Isto manteve o foco da pesquisa na otimização dos *data augmentations*.
 ### Nota para o Resnet 50
 
  - Primeiro de tudo alterar no ficheiro config_base qual é o modelo que queremos resnet18 ou resnet50
+ - Modificar a função para guardar a curva ROC do melhor individuo, neste momento está a calcular todas as vezes e reescreve
+ - Ver o que se passa porque ele tem andando a guardar os estados, e sinto que por mais que eu apague eles voltam. Por causa da gestão de se uma geração parar a meio, depois pode voltar a correr. 
