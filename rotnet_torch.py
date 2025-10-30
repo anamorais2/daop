@@ -51,9 +51,6 @@ def rotnet_collate_fn(data):
 
 
 def rotnet_collate_fn_cuda(batch):
-    # Nota: A replicação de canais para o formato (B, 3, H, W) é assumida 
-    # que é tratada na GPU ou que o batch já está no formato correto.
-    # Esta função não foi a que falhou na última execução.
     
     # Rotate 0º
     data = torch.stack([item[0] for item in batch]).to('cuda')
@@ -201,12 +198,12 @@ def train_downstream(model, trainloader_downstream, config):
                 print("Downstream START Epoch", epoch + 1, "Batch", i + 1)
 
             images, labels = data[0].to(config['device']), data[1].to(config['device'])
-            
-            # CORREÇÃO: ADICIONAR REPLICAÇÃO DE CANAL E REMOVER SQUEEZE
+           
+            # CORREÇÃO: ADICIONAR REPLICAÇÃO DE CANAL
             if images.shape[1] == 1:
                 images = images.repeat(1, 3, 1, 1) 
             
-            # images = images.squeeze(1) # <--- LINHA OFENSIVA REMOVIDA/COMENTADA!
+            # images = images.squeeze(1) 
 
             optimizer.zero_grad()
             outputs = model.model(images)

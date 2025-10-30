@@ -58,8 +58,12 @@ da_funcs = [
 
 
 def da_funcs_probs(min_prob,max_prob, img_size):
+    
+    img_height = img_size[0]
+    img_width = img_size[1]
+    
     da_funcs = [
-        lambda p0,p1,p2,p3,p4: A.Compose([A.Pad((int(p1*20), int(p2*20), int(p3*20), int(p4*20)), p=1.0), A.RandomCrop(height=img_size[0], width=img_size[1], p=1.0)], p=p0*(max_prob-min_prob)+min_prob),
+        lambda p0,p1,p2,p3,p4: A.Compose([A.Pad((int(p1*20), int(p2*20), int(p3*20), int(p4*20)), p=1.0), A.RandomCrop(height=img_height, width=img_width, p=1.0)], p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.HorizontalFlip(p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.VerticalFlip(p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.Rotate(limit=sorted((p1*180-90, p2*180-90)), interpolation=interpolation[int(p3*len(interpolation)*0.99)], border_mode=border_type[int(p4*len(border_type)*0.99)], p=p0*(max_prob-min_prob)+min_prob),
@@ -88,7 +92,7 @@ def da_funcs_probs(min_prob,max_prob, img_size):
         lambda p0,p1,p2,p3,p4: A.Blur(blur_limit=sorted((int(p1*100)+3, int(p2*100)+3)), p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.HueSaturationValue(hue_shift_limit=sorted((p1*200-100, p2*200-100)), sat_shift_limit=sorted((p3*200-100, p4*200-100)), p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.ColorJitter(brightness=p1, contrast=p2, saturation=p3, hue=p4*0.5, p=p0*(max_prob-min_prob)+min_prob),
-        lambda p0,p1,p2,p3,p4: A.RandomResizedCrop((img_size[0], img_size[1]), scale=sorted((p1*0.99+0.01, p2*0.99+0.01)), ratio=sorted((p3+0.5, p4+0.5)), p=p0*(max_prob-min_prob)+min_prob),
+        lambda p0,p1,p2,p3,p4: A.RandomResizedCrop((img_height, img_width), scale=sorted((p1*0.99+0.01, p2*0.99+0.01)), ratio=sorted((p3+0.5, p4+0.5)), p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.AutoContrast(cutoff=p1*100, method='cdf' if p2 < 0.5 else 'pil', p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.Erasing(p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.RGBShift(r_shift_limit=p1*200, g_shift_limit=p2*200, b_shift_limit=p3*200, p=p0*(max_prob-min_prob)+min_prob),
