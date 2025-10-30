@@ -110,3 +110,25 @@ Isto manteve o foco da pesquisa na otimização dos *data augmentations*.
 - **Eficiência:** modificar o `conv1` da ResNet para aceitar 1 canal traria ganhos de velocidade, evitando cálculos redundantes nos canais R, G e B.
 
 ---
+
+
+### 7. `Metricas`
+
+- **`graphs.py`** 
+    - Evolução do EA -> Gera gráficos da Max Fitness (sua Accuracy máxima) e Average Fitness ao longo das gerações. Essencial para verificar a convergência do algoritmo.
+
+-  **`train_acc_loss.py`** 
+    - Histórico de Treino -> Lê o histórico de Accuracy e perda de treino (Loss) dos modelos (guardada nos ficheiros pickle, se configurado). Útil para diagnosticar overfitting ou underfitting em indivíduos específicos.
+
+-  **`da_distribution.py`** 
+    - Frequência de Aumentos -> Calcula a frequência com que cada transformação específica (ex: HorizontalFlip, Rotate, Equalize) foi selecionada pelo Algoritmo Evolucionário no pool de melhores indivíduos.
+- **`da_pr_distribution.py`** 
+    - Parâmetros Otimizados -> Analisa a distribuição dos parâmetros (PR, valores $p_1$ a $p_4$) que o EA atribuiu aos aumentos de dados mais utilizados. Isto revela o grau de intensidade ideal das transformações (ex: Rotation Limit ideal).
+- **`visualize_DA.py`** 
+    - Visualização da Aplicação -> Utiliza a política de DA do best_individual (o string complexo no CSV) e aplica-a a imagens de teste para que possa ver o resultado dos aumentos otimizados.
+
+- **`statistic_tests.py`**  
+    - Validação Estatística	 -> Permite aplicar testes como ANOVA ou testes post-hoc para determinar se a melhor política de DA do DAOP é estatisticamente superior a um baseline manual (ex: um HorizontalFlip fixo).
+
+- **`grad_cam.py`**  
+	- Interpretabilidade do Modelo -> Implementa o Grad-CAM (Gradient-weighted Class Activation Mapping) para gerar mapas de calor, mostrando onde o modelo está a olhar na imagem para tomar a decisão de classificação. Útil para entender se os aumentos de dados estão a forçar o modelo a olhar para as características corretas.
