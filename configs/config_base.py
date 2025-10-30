@@ -63,7 +63,7 @@ config['extended_pretrained_pretext_model'] = None
 
 # model training configs
 config['framework'] = 'torch'
-config['model'] = net_models_torch.TrainResNet18
+config['model'] = net_models_torch.TrainResNet18 # ResNet18 OU ResNet50 
 config['finetune_backbone'] = False
 config['base_epochs'] = 20
 config['epochs'] = config['base_epochs']

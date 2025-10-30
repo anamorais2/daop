@@ -141,3 +141,9 @@ Isto manteve o foco da pesquisa na otimização dos *data augmentations*.
     1. rotnet_torch.py: Adicionar o cálculo da AUC e os scores de previsão (outputs) na função test_downstream.
 
     2. utils.py: Adicionar uma nova função para gerar e guardar o gráfico ROC/AUC.
+
+---
+
+### Nota para o Resnet 50
+
+ - Primeiro de tudo alterar no ficheiro config_base qual é o modelo que queremos resnet18 ou resnet50

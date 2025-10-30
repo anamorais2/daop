@@ -1,4 +1,4 @@
-import configs.config_base as config_base
+import configs.config_base_resnet18 as config_base
 
 import dataset.data_processing_breastmnist as data_processing_medmnist
 import DA.data_augmentation_albumentations as data_augmentation_albumentations
@@ -9,15 +9,21 @@ import rotnet_torch
 # 1. Parâmetros Específicos do BreastMNIST
 # ==============================================================================
 DATA_FLAG = 'breastmnist'
+RESNET_FLAG = 'resnet18'
 NUM_CLASSES_MEDMNIST = 2 
 ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 
 config = config_base.config
 
+if config['model'] == net_models_torch.TrainResNet18:
+    RESNET_FLAG = 'resnet18'
+else:
+    RESNET_FLAG = 'resnet50'
+
 # ==============================================================================
 # 2. Configurações Gerais do Experimento
 # ==============================================================================
-config['base_experiment_name'] = f"optimize_do_{DATA_FLAG}"
+config['base_experiment_name'] = f"optimize_do_{DATA_FLAG}_{RESNET_FLAG}"
 config['experiment_name'] = config['base_experiment_name']
 config['output_csv_folder'] = "output_csv" + "_" + config['base_experiment_name']
 
