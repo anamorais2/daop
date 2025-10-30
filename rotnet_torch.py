@@ -2,6 +2,9 @@ import numpy as np
 import torch
 import sys
 import os
+from sklearn.metrics import roc_curve, auc
+from analysis.plot_roc import plot_roc_curve_and_save
+
 
 # ==============================================================================
 # 1. Funções de Collation para RotNet (Corrigido o Canal 1->3)
@@ -240,11 +243,14 @@ def train_downstream(model, trainloader_downstream, config):
 
     return hist_loss, hist_acc
 
-def test_downstream(model, testloader_downstream, device, confusion_matrix_config):
+def test_downstream(model, testloader_downstream, device, confusion_matrix_config, config):
     model.model.to(device)
     model.model.eval()
     correct = 0
     total = 0
+
+    all_labels_downstream = []
+    all_probs_downstream = []
 
     if confusion_matrix_config:
         all_labels = []
@@ -259,6 +265,12 @@ def test_downstream(model, testloader_downstream, device, confusion_matrix_confi
                 images = images.repeat(1, 3, 1, 1)
 
             outputs = model.model(images)
+            
+            
+            probs = torch.softmax(outputs, dim=1)[:, 1]  # Probabilidades da classe positiva
+            all_labels_downstream.extend(labels.cpu().numpy())
+            all_probs_downstream.extend(probs.cpu().numpy())
+
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
@@ -266,8 +278,9 @@ def test_downstream(model, testloader_downstream, device, confusion_matrix_confi
             if confusion_matrix_config:
                 all_labels.extend(labels.tolist())
                 all_predicted.extend(predicted.tolist())
-
-    print(f"Downstream Test Accuracy: {correct / total * 100:.2f}%")
+                
+    downstream_acc = correct / total
+    print(f"Downstream Test Accuracy: {downstream_acc * 100:.2f}%")
 
     if confusion_matrix_config:
         from torcheval.metrics.functional import multiclass_confusion_matrix
@@ -282,8 +295,20 @@ def test_downstream(model, testloader_downstream, device, confusion_matrix_confi
             confusion_matrix_path = os.path.join(confusion_matrix_config['confusion_matrix_folder'], confusion_matrix_config['confusion_matrix_downstream_file'])
             with open(confusion_matrix_path, 'a') as f:
                 f.write(f"{conf_matrix.tolist()}\n")
+                
+    # Calcular e guardar a Curva ROC            
+    fpr, tpr, thresholds = roc_curve(all_labels_downstream, all_probs_downstream)
+    roc_auc = auc(fpr, tpr)
+    print(f"Downstream Test AUC-ROC: {roc_auc:.4f}")
+    
+    file_name_prefix = f"{config['dataset']}_{config['experiment_name']}_{config['seed']}"
+    output_folder = os.path.join(config['output_csv_folder'], 'roc_curves')
+    os.makedirs(output_folder, exist_ok=True)
+    
+    plot_roc_curve_and_save(fpr, tpr, roc_auc, file_name_prefix, output_folder)
+    
 
-    return correct / total
+    return downstream_acc, roc_auc
     
 
 def evaluate_rotnet(trainloader_pretext, trainloader_downstream, testloader_pretext, testloader_downstream, config):
@@ -301,6 +326,6 @@ def evaluate_rotnet(trainloader_pretext, trainloader_downstream, testloader_pret
 
     model.switch_to_downstream()
     downstream_hist_loss, downstream_hist_acc = train_downstream(model, trainloader_downstream, config)
-    downstream_acc = test_downstream(model, testloader_downstream, config['device'], config['confusion_matrix_config'])
+    downstream_acc, roc_auc = test_downstream(model, testloader_downstream, config['device'], config['confusion_matrix_config'], config)
     return downstream_acc, pretext_acc, {"pretext_loss": pretext_hist_loss, "pretext_acc": pretext_hist_acc, 
-                                          "downstream_loss": downstream_hist_loss, "downstream_acc": downstream_hist_acc}
+                                          "downstream_loss": downstream_hist_loss, "downstream_acc": downstream_acc, "roc_auc": roc_auc}

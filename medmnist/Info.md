@@ -132,3 +132,12 @@ Isto manteve o foco da pesquisa na otimização dos *data augmentations*.
 
 - **`grad_cam.py`**  
 	- Interpretabilidade do Modelo -> Implementa o Grad-CAM (Gradient-weighted Class Activation Mapping) para gerar mapas de calor, mostrando onde o modelo está a olhar na imagem para tomar a decisão de classificação. Útil para entender se os aumentos de dados estão a forçar o modelo a olhar para as características corretas.
+
+
+---
+
+### Nota para o cálculo da curva de ROC
+
+    1. rotnet_torch.py: Adicionar o cálculo da AUC e os scores de previsão (outputs) na função test_downstream.
+
+    2. utils.py: Adicionar uma nova função para gerar e guardar o gráfico ROC/AUC.

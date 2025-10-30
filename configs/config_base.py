@@ -90,14 +90,14 @@ config['save_downstream_model'] = None
 config['shuffle_dataset'] = True
 config['confusion_matrix_config'] = None
 config['rotations_on_cuda'] = False
-# config['confusion_matrix_config'] = {
-#     'print_confusion_matrix': True,
-#     'confusion_matrix_folder': "output_confusion_matrix",
-#     'confusion_matrix_pretext_file': "confusion_matrix_pretext.txt",
-#     'confusion_matrix_downstream_file': "confusion_matrix_downstream.txt",
-#     'num_classes_pretext': config['num_classes_pretext'],
-#     'num_classes_downstream': config['num_classes_downstream']
-# }
+config['confusion_matrix_config'] = {
+     'print_confusion_matrix': True,
+     'confusion_matrix_folder': "output_confusion_matrix",
+     'confusion_matrix_pretext_file': "confusion_matrix_pretext.txt",
+     'confusion_matrix_downstream_file': "confusion_matrix_downstream.txt",
+     'num_classes_pretext': config['num_classes_pretext'],
+     'num_classes_downstream': config['num_classes_downstream']
+}
 # config['torch_float_type'] = torch.float16
 
 # evolutionary algorithm configs
