@@ -59,3 +59,4 @@ config['batch_size'] = 128
 config['pretext_batch_size'] = lambda: config['batch_size'] * 2
 config['downstream_batch_size'] = lambda: config['batch_size']
 config['num_workers'] = 4
+

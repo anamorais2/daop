@@ -16,9 +16,9 @@ def plot_roc_curve_and_save(fpr, tpr, roc_auc, file_name_prefix, output_folder):
     
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate (FPR)')
-    plt.ylabel('True Positive Rate (TPR / Recall)')
-    plt.title(f'Curva ROC - Desempenho Downstream')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title(f'Curva ROC - {file_name_prefix}')
     plt.legend(loc="lower right")
 
     plt.savefig(file_path)

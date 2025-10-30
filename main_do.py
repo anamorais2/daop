@@ -4,7 +4,7 @@ import sys
 import pandas as pd
 import ast
 
-import configs.config_medmnist as config_base
+import configs.config_base as config_base
 import EA
 
 

@@ -8,6 +8,7 @@ import mutations
 import chromosomes
 import train_with_DA
 import evolution_mod_functions
+import dataset.data_processing_breastmnist as data_processing_medmnist
 
 ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 # FIX_PRETEXT_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [1.0, 0.5, 0.5, 0.5, 0.5]]]
@@ -15,11 +16,22 @@ ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 
 # START_PARENT = [[43, [0.33, 0.56, 0.35, 0.32]]]
 
+DATA_FLAG = 'breastmnist'
+RESNET_FLAG = 'resnet18'
+NUM_CLASSES_MEDMNIST = 2 
+
 config = {}
 
+if config['model'] == net_models_torch.TrainResNet18:
+    RESNET_FLAG = 'resnet18'
+else:
+    RESNET_FLAG = 'resnet50'
+
+
 # experiment configs
-config['base_experiment_name'] = "optimize_spdo"
+config['base_experiment_name'] = f"optimize_do_{DATA_FLAG}_{RESNET_FLAG}"
 config['experiment_name'] = config['base_experiment_name']
+config['output_csv_folder'] = "output_csv" + "_" + config['base_experiment_name']
 config['seeds'] = range(5)
 config['seed'] = config['seeds'][0]
 config['state_folder'] = "states"
@@ -29,18 +41,20 @@ config['save_state'] = state_manager_torch.save_state
 config['every_gen_state_reset'] = None
 
 # dataset configs
-config['dataset'] = "cifar10"
-config['dataset_file_name'] = "cifar-10-python.tar.gz"
-config['dataset_transforms'] = data_processing_rotnet_cifar.dataset_transforms
-config['dim'] = (32, 32, 3)
-config['num_classes'] = 10
-config['num_classes_pretext'] = 4
+config['dataset'] = DATA_FLAG
+config['dim'] = (28, 28, 1)
+config['num_classes'] = NUM_CLASSES_MEDMNIST
 config['num_classes_downstream'] = config['num_classes']
-config['load_dataset_func'] = data_processing_rotnet_cifar.load_dataset
-config['data_loader_func'] = data_processing_rotnet_cifar.create_data_loaders
-config['cache_folder'] = "cache_cifar10_torch"
-config['output_csv_folder'] = "output_csv" + "_" + config['base_experiment_name']
-config['delete_cache'] = False
+config['cache_folder'] = f"cache_{DATA_FLAG}_torch"
+
+config['fix_pretext_da'] = ROTNET_DA
+
+# ATENÇÃO: SUBSTITUIR ESTAS FUNÇÕES
+# Estas funções devem estar no seu novo ficheiro data_processing_medmnist.py
+config['load_dataset_func'] = data_processing_medmnist.load_dataset
+config['data_loader_func'] = data_processing_medmnist.create_data_loaders
+config['dataset_transforms'] = data_processing_medmnist.dataset_transforms
+
 
 # augmentation configs
 config['individual_evaluation_func'] = train_with_DA.train_and_evaluate_individual
@@ -52,7 +66,7 @@ config['device'] = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device {config['device']}")
 # config['shuffle_dataset'] = False     # shuffle with sampler
 config['evolution_type'] = "simultaneous"   # "same"/"simultaneous"
-config['fix_pretext_da'] = None     # ROTNET_DA
+#config['fix_pretext_da'] = None     # ROTNET_DA                                    -> VERIFICAR ISTO 
 config['fix_downstream_da'] = None      # ROTNET_DA
 # config['base_pretrained_pretext_model'] = os.path.join("models", "rn_pretext_0.pt")
 # config['pretrained_pretext_model'] = config['base_pretrained_pretext_model']
@@ -88,7 +102,7 @@ config['save_downstream_model'] = None
 # config['save_pretext_model'] = config['base_experiment_name'] + "_pretext"
 # config['save_downstream_model'] = config['base_experiment_name'] + "_downstream"
 config['shuffle_dataset'] = True
-config['confusion_matrix_config'] = None
+#config['confusion_matrix_config'] = None
 config['rotations_on_cuda'] = False
 config['confusion_matrix_config'] = {
      'print_confusion_matrix': True,
