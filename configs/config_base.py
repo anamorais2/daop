@@ -9,6 +9,7 @@ import chromosomes
 import train_with_DA
 import evolution_mod_functions
 import dataset.data_processing_breastmnist as data_processing_medmnist
+import medmnist_daop.sl_evaluation as sl_evaluation
 
 ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 # FIX_PRETEXT_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [1.0, 0.5, 0.5, 0.5, 0.5]]]
@@ -25,7 +26,7 @@ config = {}
 
 config['model'] = net_models_torch.TrainResNet18 # ResNet18 OR ResNet50 
 
-if config['model'] == net_models_torch.TrainResNet18:
+if config['model'] == net_models_torch.TrainResNet18Simple:
     RESNET_FLAG = 'resnet18'
 else:
     RESNET_FLAG = 'resnet50'
@@ -50,10 +51,9 @@ config['num_classes'] = NUM_CLASSES_MEDMNIST
 config['num_classes_downstream'] = config['num_classes']
 config['num_classes_pretext'] = 4
 config['cache_folder'] = f"cache_{DATA_FLAG}_torch"
+config['delete_cache'] = False
 
-
-# ATENÇÃO: SUBSTITUIR ESTAS FUNÇÕES
-# Estas funções devem estar no seu novo ficheiro data_processing_medmnist.py
+# data loading functions
 config['load_dataset_func'] = data_processing_medmnist.load_dataset
 config['data_loader_func'] = data_processing_medmnist.create_data_loaders
 config['dataset_transforms'] = data_processing_medmnist.dataset_transforms
@@ -94,7 +94,7 @@ config['batch_size'] = 128
 config['pretext_batch_size'] = lambda: config['batch_size'] * 4
 config['downstream_batch_size'] = lambda: config['batch_size']
 config['num_workers'] = 4
-config['model_evaluate_func'] = rotnet_torch.evaluate_rotnet
+config['model_evaluate_func'] = sl_evaluation.evaluate_sl
 config['check_memory_leaks'] = False
 config['track_train_bottleneck'] = False
 config['save_models_folder'] = None

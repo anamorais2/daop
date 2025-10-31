@@ -99,3 +99,47 @@ class TrainResNet50():
     
     def __str__(self):
         return "RotNetResNet50"
+
+
+
+#-----------------------------------------------------
+
+class TrainResNet18Simple():
+    def __init__(self, num_classes_downstream=2):
+        self.model = torchvision.models.resnet18(weights=None)
+        self.num_classes_downstream = num_classes_downstream
+        
+        # O ResNet18 padrão tem 512 features no final.
+        # Substituímos o FC para a nossa tarefa binária (2 classes).
+        self.model.fc = nn.Linear(512, self.num_classes_downstream)
+
+        self.criterion = nn.CrossEntropyLoss
+        self.optimizer = lambda params: torch.optim.Adam(params, lr=0.001)
+        self.mode = "sl" 
+
+    
+    def load_weights_from_path(self, path):
+        self.model.load_state_dict(torch.load(path))
+    
+    def __str__(self):
+        return "RotNetResNet18Simple"
+    
+    
+class TrainResNet50Simple():
+    def __init__(self, num_classes_downstream=2):
+        self.model = torchvision.models.resnet50(weights=None)
+        self.num_classes_downstream = num_classes_downstream
+        
+        # O ResNet50 padrão tem 2048 features no final.
+        # Substituímos o FC para a nossa tarefa binária (2 classes).
+        self.model.fc = nn.Linear(2048, self.num_classes_downstream)
+        
+        self.criterion = nn.CrossEntropyLoss
+        self.optimizer = lambda params: torch.optim.Adam(params, lr=0.001)
+        self.mode = "sl"
+        
+    def load_weights_from_path(self, path):
+        self.model.load_state_dict(torch.load(path))
+    
+    def __str__(self):
+        return "RotNetResNet50Simple"

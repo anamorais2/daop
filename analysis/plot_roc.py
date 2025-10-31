@@ -25,3 +25,4 @@ def plot_roc_curve_and_save(fpr, tpr, roc_auc, file_name_prefix, output_folder):
     plt.close()
     
     print(f"ROC curve saved to {file_path}")
+    
