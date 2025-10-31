@@ -6,7 +6,7 @@ import numpy as np
 import random
 import gc
 from pympler.tracker import SummaryTracker
-import sl_evaluation
+import medmnist_daop.sl_evaluation_medmnist as sl_evaluation_medmnist
 
 
 

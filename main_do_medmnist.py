@@ -7,8 +7,7 @@ import ast
 import analysis.plot_roc as plot_roc
 
 import configs.config_base as config_base
-import EA_simple as EA
-import train_with_DA
+import EA_medmnist as EA
 
 
 def completed_run(config):
