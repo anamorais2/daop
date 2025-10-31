@@ -9,7 +9,7 @@ import chromosomes
 import train_with_DA
 import evolution_mod_functions
 import dataset.data_processing_breastmnist as data_processing_medmnist
-import medmnist_daop.sl_evaluation_medmnist as sl_evaluation_medmnist
+import sl_evaluation_medmnist as sl_evaluation_medmnist
 
 ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 # FIX_PRETEXT_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [1.0, 0.5, 0.5, 0.5, 0.5]]]
