@@ -58,7 +58,7 @@ def train_sl(model, trainloader, config):
 
 
 
-def test_sl(model, testloader, config):
+def test_sl(model, testloader, device, confusion_matrix_config, config):
     device = config['device']
     confusion_matrix_config = config.get('confusion_matrix_config') 
 

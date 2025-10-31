@@ -24,10 +24,11 @@ NUM_CLASSES_MEDMNIST = 2
 config = {}
 
 
-config['model'] = net_models_torch.TrainResNet18 # ResNet18 OR ResNet50 
+config['model'] = net_models_torch.TrainResNet18Simple 
 
 if config['model'] == net_models_torch.TrainResNet18Simple:
     RESNET_FLAG = 'resnet18'
+    
 else:
     RESNET_FLAG = 'resnet50'
 
@@ -54,8 +55,8 @@ config['cache_folder'] = f"cache_{DATA_FLAG}_torch"
 config['delete_cache'] = False
 
 # data loading functions
-config['load_dataset_func'] = data_processing_medmnist.load_dataset
-config['data_loader_func'] = data_processing_medmnist.create_data_loaders
+config['load_dataset_func'] = data_processing_medmnist.load_dataset_simple
+config['data_loader_func'] = data_processing_medmnist.create_data_loaders_simple
 config['dataset_transforms'] = data_processing_medmnist.dataset_transforms
 
 
