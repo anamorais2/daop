@@ -10,33 +10,60 @@ import sl_evaluation_medmnist as sl_evaluation_medmnist
 
 
 
-def write_gen_stats(config, gen, population, best_individual, best_auc):
+import pandas as pd
+import os
+import numpy as np # Necessário para np.mean/np.std
+
+def write_gen_stats(config, gen_stats, population, best_individual, best_auc):
+  
+    # Usamos best_individual[1] (a fitness) e best_individual[0] (o genótipo)
     avg_fitness = np.mean([individual[1] for individual in population])
     std_fitness = np.std([individual[1] for individual in population])
-    best_fitness = best_individual[1]
-    best_individual = best_individual[0]
-    total_time = sum([individual[3] for individual in population])
+    
+    # O objeto best_individual que entra na função JÁ É o melhor indivíduo.
+    best_fitness_val = best_individual[1]
+    best_genotype_str = str(best_individual[0]) # Genótipo (lista de aumentos)
 
+    generation = gen_stats['generation']
+    total_time = gen_stats['total_time']
+    
+    stats_dict = {
+        'generation': generation,
+        'avg_fitness': avg_fitness,
+        'std_fitness': std_fitness,
+        'best_fitness': best_fitness_val,
+        'best_auc': best_auc, # Valor escalar
+        'total_time': total_time,
+        'best_individual': best_genotype_str,
+        
+    }
+
+    df = pd.DataFrame([stats_dict])
+ 
     if not os.path.exists(config['output_csv_folder']):
         os.makedirs(config['output_csv_folder'])
 
     file_path = os.path.join(config['output_csv_folder'], f'{config["dataset"]}_{config["experiment_name"]}_{config["seed"]}.csv')
-    file_path_backup = os.path.join(config['output_csv_folder'], f'{config["dataset"]}_{config["experiment_name"]}_{config["seed"]}_backup.csv')
 
+    write_header = not os.path.exists(file_path)
+    
     try:
-        with open(file_path, 'a') as stats_file:
-            if gen == 1:
-                stats_file.write('generation;avg_fitness;std_fitness;best_fitness;best_auc;total_time;best_individual;population\n')
-            stats_file.write(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{total_time};{best_individual};{population}\n')
+        df.to_csv(file_path, mode='a', header=write_header, index=False, sep=';')
+        
     except Exception as e:
-        print(f"Error writing stats to file {file_path}: {e}")
+        print(f"ERRO: Falha ao escrever estatísticas no ficheiro {file_path}: {e}")
+        
+        # Tentar escrever no ficheiro de backup em caso de falha de I/O
+        file_path_backup = os.path.join(config['output_csv_folder'], f'{config["dataset"]}_{config["experiment_name"]}_{config["seed"]}_backup.csv')
+        print(f"Tentando escrever no ficheiro de backup: {file_path_backup}")
+        
+        write_header_backup = not os.path.exists(file_path_backup)
         try:
-            with open(file_path_backup, 'a') as stats_file:
-                stats_file.write('generation;avg_fitness;std_fitness;best_fitness;best_auc;total_time;best_individual;population\n')
-                stats_file.write(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{total_time};{best_individual};{population}\n')
-        except Exception as e:
-            print(f"Error writing stats to backup file {file_path_backup}: {e}")
-            print(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{total_time};{best_individual};{population}')
+            df.to_csv(file_path_backup, mode='a', header=write_header_backup, index=False, sep=';')
+            print("Escrita no backup bem-sucedida.")
+        except Exception as e_backup:
+            print(f"ERRO CRÍTICO: Falha ao escrever no ficheiro de backup {file_path_backup}: {e_backup}")
+            print(f"Dados perdidos da Geração {generation}: {stats_dict}")
 
 
 def create_individual(config):
