@@ -14,64 +14,54 @@ import pandas as pd
 import os
 import numpy as np # Necessário para np.mean/np.std
 
-def write_gen_stats(config, gen, population, best_individual, total_gen_time, best_auc):
-   
-    # 1. CÁLCULO E EXTRAÇÃO DOS DADOS A PARTIR DA POPULAÇÃO
+def write_gen_stats(config, gen, population, best_individual, best_auc):
     avg_fitness = np.mean([individual[1] for individual in population])
     std_fitness = np.std([individual[1] for individual in population])
-    
-    best_fitness_val = best_individual[1]
-    best_genotype_str = str(best_individual[0]) 
+    best_fitness = best_individual[1]
+    best_individual_genotype = best_individual[0] # Renomeado para clareza
+    total_time = sum([individual[3] for individual in population if individual[3] is not None])
 
-    # 2. PREPARAR O DICIONÁRIO DE HISTÓRICO (individual[4])
-    # Copiamos o histórico do melhor indivíduo para o limparmos
-    history_to_save = best_individual[4].copy() 
-
-    # REMOVER OS ARRAYS GRANDES (FPR e TPR) antes de guardar no CSV
-    if 'fpr' in history_to_save:
-        del history_to_save['fpr']
-    if 'tpr' in history_to_save:
-        del history_to_save['tpr']
-
-    # 3. CRIAR DICIONÁRIO DE ESTATÍSTICAS PARA A LINHA CSV
-    stats_dict = {
-        'generation': gen, 
-        'avg_fitness': avg_fitness,
-        'std_fitness': std_fitness,
-        'best_fitness': best_fitness_val,
-        'best_auc': best_auc, # Valor escalar
-        'total_time': total_gen_time, # Usa o 'total_gen_time' (float) diretamente
-        'best_individual': best_genotype_str,
-        'history_log': history_to_save 
-    }
-
-    df = pd.DataFrame([stats_dict])
-    
-    # 4. GESTÃO DOS FICHEIROS E ESCRITA
     if not os.path.exists(config['output_csv_folder']):
         os.makedirs(config['output_csv_folder'])
 
     file_path = os.path.join(config['output_csv_folder'], f'{config["dataset"]}_{config["experiment_name"]}_{config["seed"]}.csv')
-    
-    # Decide se escreve o cabeçalho (apenas se o ficheiro não existir ou estiver vazio)
-    write_header = not os.path.exists(file_path) 
-    
+    file_path_backup = os.path.join(config['output_csv_folder'], f'{config["dataset"]}_{config["experiment_name"]}_{config["seed"]}_backup.csv')
+
+    # --- Limpeza de Dados da Curva (Para não poluir o CSV) ---
+    # Vamos criar uma cópia "limpa" da população para guardar no CSV
+    # (Removendo os arrays 'fpr' e 'tpr' do histórico 'individual[4]')
+    population_to_save = []
+    for ind in population:
+        if ind[4] is not None: # Se houver histórico
+            history_copy = ind[4].copy()
+            if 'fpr' in history_copy:
+                del history_copy['fpr']
+            if 'tpr' in history_copy:
+                del history_copy['tpr']
+            population_to_save.append([ind[0], ind[1], ind[2], ind[3], history_copy])
+        else:
+            population_to_save.append(ind)
+    # ---------------------------------------------------------
+
     try:
-        df.to_csv(file_path, mode='a', header=write_header, index=False, sep=';')
-        
+        with open(file_path, 'a') as stats_file:
+            if gen == 1:
+                # CORREÇÃO 2: Adicionar 'best_auc' ao cabeçalho
+                stats_file.write('generation;avg_fitness;std_fitness;best_fitness;best_auc;total_time;best_individual;population\n')
+            
+            # CORREÇÃO 3: Adicionar 'best_auc' e a população limpa à linha
+            stats_file.write(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{total_time};{best_individual_genotype};{population_to_save}\n')
     except Exception as e:
-        print(f"ERRO: Falha ao escrever estatísticas no ficheiro {file_path}: {e}")
-        
-        file_path_backup = os.path.join(config['output_csv_folder'], f'{config["dataset"]}_{config["experiment_name"]}_{config["seed"]}_backup.csv')
-        print(f"Tentando escrever no ficheiro de backup: {file_path_backup}")
-        
-        write_header_backup = not os.path.exists(file_path_backup)
+        print(f"Error writing stats to file {file_path}: {e}")
         try:
-            df.to_csv(file_path_backup, mode='a', header=write_header_backup, index=False, sep=';')
-            print("Escrita no backup bem-sucedida.")
-        except Exception as e_backup:
-            print(f"ERRO CRÍTICO: Falha ao escrever no ficheiro de backup {file_path_backup}: {e_backup}")
-            print(f"Dados perdidos da Geração {gen}: {stats_dict}")
+            with open(file_path_backup, 'a') as stats_file:
+                # CORREÇÃO 4: Adicionar 'best_auc' ao cabeçalho (Backup)
+                stats_file.write('generation;avg_fitness;std_fitness;best_fitness;best_auc;total_time;best_individual;population\n')
+                # CORREÇÃO 5: Adicionar 'best_auc' e a população limpa à linha (Backup)
+                stats_file.write(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{total_time};{best_individual_genotype};{population_to_save}\n')
+        except Exception as e:
+            print(f"Error writing stats to backup file {file_path_backup}: {e}")
+            print(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{total_time};{best_individual_genotype};{population_to_save}')
 
 
 def create_individual(config):
@@ -152,19 +142,19 @@ def ea(config):
             population = [copy.deepcopy(best_gen_individual)]
             for _ in range(config['population_size']-1):
                 genotype = [
-                    config["fix_pretext_da"] if config['fix_pretext_da'] is not None else None,     # 0 - pretext
-                    config["fix_downstream_da"] if config['fix_downstream_da'] is not None else None,   # 1 - downstream
+                    config["fix_pretext_da"] if config['fix_pretext_da'] is not None else None,    # 0 - pretext
+                    config["fix_downstream_da"] if config['fix_downstream_da'] is not None else None,    # 1 - downstream
                 ]
 
                 if config['fix_pretext_da'] is None or config['fix_downstream_da'] is None:
                     if config['evolution_type'] == 'same':
                         # print("Same evolution type mutation")
-                        mutation_phase = 0 if config['fix_pretext_da'] is None else 1   # pretext or downstream chromosome mutation if fixed DAs are used
+                        mutation_phase = 0 if config['fix_pretext_da'] is None else 1    # pretext or downstream chromosome mutation if fixed DAs are used
                         chromosomes = config['mutation'](best_gen_individual[0][mutation_phase], config)
                         if config['fix_pretext_da'] is None:
-                            genotype[0] = chromosomes   # mutated pretext chromosomes
+                            genotype[0] = chromosomes    # mutated pretext chromosomes
                         if config['fix_downstream_da'] is None:
-                            genotype[1] = chromosomes   # mutated downstream chromosomes
+                            genotype[1] = chromosomes    # mutated downstream chromosomes
                     elif config['evolution_type'] == 'simultaneous':
                         # print("Simultaneous evolution type mutation")
                         if config['fix_pretext_da'] is None:
@@ -215,7 +205,13 @@ def ea(config):
         # best individual
         best_gen_individual = copy.deepcopy(max(population, key=lambda x: x[1]))
         
-        write_gen_stats(config, gen, population, best_gen_individual,best_auc = best_gen_individual[4].get('sl_auc', -1))
+        # --- CORREÇÃO 6: Corrigir a chamada à função ---
+        # 1. Extrair o AUC
+        best_auc_value = best_gen_individual[4].get('sl_auc', -1)
+        
+        # 2. Chamar a função com 5 argumentos (sem o total_gen_time)
+        write_gen_stats(config, gen, population, best_gen_individual, best_auc_value)
+        # --- FIM DA CORREÇÃO ---
 
         if config['save_state']:
             config['save_state'](config)
@@ -272,7 +268,11 @@ def ea(config):
 
             individual[3] = end_time - start_time
 
-            print(f"Top {i+1}/{len(population)} individual isolated extended run accuracy: {individual[1]:.2f}")
+            print(f"Top {iG+1}/{len(population)} individual isolated extended run accuracy: {individual[1]:.2f}")
             print(f"Top {i+1}/{len(population)} individual isolated extended run training time: {individual[3]:.2f} seconds")
 
-        write_gen_stats(config, gen+1, population=population, best_individual=max(population, key=lambda x: x[1]), best_auc=max(population, key=lambda x: x[4]).get('sl_auc', -1))
+     
+        extended_best_individual = max(population, key=lambda x: x[1])
+        extended_best_auc = max([ind[4].get('sl_auc', -1) for ind in population if ind[4] is not None])
+
+        write_gen_stats(config, gen+1, population=population, best_individual=extended_best_individual, best_auc=extended_best_auc)
