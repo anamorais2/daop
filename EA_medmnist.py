@@ -188,6 +188,10 @@ def ea(config):
             print(f"\nTraining individual {i+1} for {config['epochs']} epochs: {individual[0]}")
             if individual[1] is None or config['recalculate_best']:
                 
+
+
+                config['generation'] = gen
+
                 start_time = time.perf_counter()
                 individual[1], individual[2], individual[4] = config['individual_evaluation_func'](individual[0], config)
                 end_time = time.perf_counter()
@@ -234,7 +238,7 @@ def ea(config):
 
 
         for i in range(config['population_size']-1, -1, -1):
-            if population[i] != best_gen_individual:
+            if population[i][0] != best_gen_individual[0]: 
                 for j in range(len(population[i])-1, -1, -1):
                     del population[i][j]
                 del population[i]
