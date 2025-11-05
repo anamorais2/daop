@@ -7,18 +7,15 @@ import random
 import gc
 from pympler.tracker import SummaryTracker
 import sl_evaluation_medmnist as sl_evaluation_medmnist
-
-
-
 import pandas as pd
 import os
-import numpy as np # Necessário para np.mean/np.std
+import numpy as np 
 
 def write_gen_stats(config, gen, population, best_individual, best_auc):
     avg_fitness = np.mean([individual[1] for individual in population])
     std_fitness = np.std([individual[1] for individual in population])
     best_fitness = best_individual[1]
-    best_individual_genotype = best_individual[0] # Renomeado para clareza
+    best_individual_genotype = best_individual[0] 
     total_time = sum([individual[3] for individual in population if individual[3] is not None])
 
     if not os.path.exists(config['output_csv_folder']):
@@ -27,8 +24,7 @@ def write_gen_stats(config, gen, population, best_individual, best_auc):
     file_path = os.path.join(config['output_csv_folder'], f'{config["dataset"]}_{config["experiment_name"]}_{config["seed"]}.csv')
     file_path_backup = os.path.join(config['output_csv_folder'], f'{config["dataset"]}_{config["experiment_name"]}_{config["seed"]}_backup.csv')
 
-    # --- Limpeza de Dados da Curva (Para não poluir o CSV) ---
-    # Vamos criar uma cópia "limpa" da população para guardar no CSV
+
     # (Removendo os arrays 'fpr' e 'tpr' do histórico 'individual[4]')
     population_to_save = []
     for ind in population:
@@ -41,23 +37,18 @@ def write_gen_stats(config, gen, population, best_individual, best_auc):
             population_to_save.append([ind[0], ind[1], ind[2], ind[3], history_copy])
         else:
             population_to_save.append(ind)
-    # ---------------------------------------------------------
 
     try:
         with open(file_path, 'a') as stats_file:
             if gen == 1:
-                # CORREÇÃO 2: Adicionar 'best_auc' ao cabeçalho
                 stats_file.write('generation;avg_fitness;std_fitness;best_fitness;best_auc;total_time;best_individual;population\n')
             
-            # CORREÇÃO 3: Adicionar 'best_auc' e a população limpa à linha
             stats_file.write(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{total_time};{best_individual_genotype};{population_to_save}\n')
     except Exception as e:
         print(f"Error writing stats to file {file_path}: {e}")
         try:
             with open(file_path_backup, 'a') as stats_file:
-                # CORREÇÃO 4: Adicionar 'best_auc' ao cabeçalho (Backup)
                 stats_file.write('generation;avg_fitness;std_fitness;best_fitness;best_auc;total_time;best_individual;population\n')
-                # CORREÇÃO 5: Adicionar 'best_auc' e a população limpa à linha (Backup)
                 stats_file.write(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{total_time};{best_individual_genotype};{population_to_save}\n')
         except Exception as e:
             print(f"Error writing stats to backup file {file_path_backup}: {e}")
@@ -75,9 +66,9 @@ def create_individual(config):
             print("Same evolution type creation")
             chromosomes = [config['create_chromosome']() for _ in range(random.randint(1, config['max_chromosomes']))]
             if config['fix_pretext_da'] is None:
-                genotype[0] = chromosomes   # pretext chromosomes
+                genotype[0] = chromosomes  
             if config['fix_downstream_da'] is None:
-                genotype[1] = chromosomes   # downstream chromosomes
+                genotype[1] = chromosomes  
         elif config['evolution_type'] == 'simultaneous':
             print("Simultaneous evolution type creation")
             if config['fix_pretext_da'] is None:
@@ -120,7 +111,6 @@ def ea(config):
 
         evolution_mod(config, past_gen=True)
 
-    # main evolution loop
     for gen in range(config['start_gen'], config['stop_gen']+1):
         if config['max_generations_per_run'] is not None:
             config['current_run_generations'] += 1
@@ -137,7 +127,6 @@ def ea(config):
             print(f"Running evolution mod for generation {gen}")
             config['evolution_mods'][gen](config)
 
-        # new generation population
         if config['start_population'] is None:
             population = [copy.deepcopy(best_gen_individual)]
             for _ in range(config['population_size']-1):
@@ -209,13 +198,10 @@ def ea(config):
         # best individual
         best_gen_individual = copy.deepcopy(max(population, key=lambda x: x[1]))
         
-        # --- CORREÇÃO 6: Corrigir a chamada à função ---
         # 1. Extrair o AUC
         best_auc_value = best_gen_individual[4].get('sl_auc', -1)
         
-        # 2. Chamar a função com 5 argumentos (sem o total_gen_time)
         write_gen_stats(config, gen, population, best_gen_individual, best_auc_value)
-        # --- FIM DA CORREÇÃO ---
 
         if config['save_state']:
             config['save_state'](config)

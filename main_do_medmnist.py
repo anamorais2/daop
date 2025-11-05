@@ -6,7 +6,7 @@ import ast
 
 import analysis.plot_roc as plot_roc
 
-import configs.config_base as config_base
+import configs.config_base_medmnist as config_base
 import EA_medmnist as EA
 
 
