@@ -18,12 +18,8 @@ INFO_BREAST = INFO[DATA_FLAG]
 DataClass = getattr(medmnist_dataset, INFO_BREAST['python_class'])
 
 
-# O DAOP usa este wrapper para aplicar os aumentos gerados pelo algoritmo evolucionário.
 class BreastMNISTAlbumentations(DataClass):
-    """
-    Wrapper para o BreastMNIST que permite aplicar transformações Albumentations 
-    diretamente no `__getitem__` e garante 3 canais.
-    """
+    
     def __init__(self, transform=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.transform = transform
@@ -54,10 +50,7 @@ class BreastMNISTAlbumentations(DataClass):
 
         # O rótulo é um tensor (1 classe), converte para escalar para RotNet
         return img, torch.tensor(target).squeeze()
-    
-# ==============================================================================
-# 2. Transformações de Pré-Processamento
-# ==============================================================================
+
 
 def dataset_transforms():
     """
@@ -71,9 +64,6 @@ def dataset_transforms():
 
     return [], [A.Normalize(mean=mean, std=std), ToTensorV2()]
 
-# ==============================================================================
-# 3. Funções de Carregamento de Dados (Adaptado de rotnet_cifar.py)
-# ==============================================================================
 
 def load_dataset(individual, config):
     if not os.path.exists(config['cache_folder']):
@@ -118,9 +108,6 @@ def load_dataset(individual, config):
     print(f"Dataset {DATA_FLAG} loaded successfully.")
     return trainset_pretext, trainset_downstream, testset_pretext, testset_downstream
 
-# ==============================================================================
-# 4. Funções de Criação de Data Loaders (Adaptado de rotnet_cifar.py)
-# ==============================================================================
 
 def create_data_loaders(trainset_pretext, trainset_downstream, testset_pretext, testset_downstream, config):
     
@@ -172,9 +159,7 @@ def create_data_loaders(trainset_pretext, trainset_downstream, testset_pretext, 
     return trainloader_pretext, trainloader_downstream, testloader_pretext, testloader_downstream
     
     
-   # No dataset/data_processing_breastmnist.py
 
-# ... (Mantenha o wrapper BreastMNISTAlbumentations e dataset_transforms) ...
 
 # ==============================================================================
 # 3. Funções de Carregamento de Dados (Simplificado para SL)
@@ -221,7 +206,7 @@ def load_dataset_simple(individual, config):
     elif (len(augs_genotype) == 2 and 
           isinstance(augs_genotype[0], int) and 
           isinstance(augs_genotype[1], list)):
-        # CASO 3: Genótipo é uma ÚNICA AUG (O seu erro atual)
+        # CASO 3: Genótipo é uma ÚNICA AUG 
         # Ex: [ 1, [0.5,...] ]
         # Devemos envolvê-lo numa lista para map_augments:
         sl_augs_list = [ augs_genotype ]
