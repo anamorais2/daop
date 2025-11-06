@@ -66,9 +66,7 @@ def reset_config(config):
     config['best_individuals'] = []
     config['state_file'] = None
     config['epochs'] = config['base_epochs']
-    config['pretext_epochs'] = config['base_pretext_epochs']
-    config['downstream_epochs'] = config['base_downstream_epochs']
-    config['pretrained_pretext_model'] = config['base_pretrained_pretext_model']
+  
     
     
 def generate_final_roc_plot(config):

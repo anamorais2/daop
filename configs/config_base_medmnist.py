@@ -11,7 +11,7 @@ import evolution_mod_functions
 
 
 DATA_FLAG = 'breastmnist'
-RESNET_FLAG = 'resnet18' # Mude para 'resnet50' para o ResNet50
+RESNET_FLAG = 'resnet50' # Mude para 'resnet50' para o ResNet50
 NUM_CLASSES_MEDMNIST = 2 # 2 classes para BreastMNIST
 
 config = {}
@@ -65,7 +65,7 @@ config['evolution_type'] = "simultaneous" # Irá mutar apenas o índice 1
 
 config['min_da_prob'] = 0.1
 config['max_da_prob'] = 0.9
-config['da_funcs'] = DA.data_augmentation_albumentations.data_augmentation_albumentations.da_funcs_probs(config['min_da_prob'], config['max_da_prob'], config['dim'][:2])
+config['da_funcs'] = DA.data_augmentation_albumentations.da_funcs_probs(config['min_da_prob'], config['max_da_prob'], config['dim'][:2])
 config['n_pr'] = 4 
 config['max_chromosomes'] = 5 
 
