@@ -67,7 +67,7 @@ def reset_config(config):
     config['state_file'] = None
     config['epochs'] = config['base_epochs']
   
-    
+  
     
 def generate_final_roc_plot(config):
    
