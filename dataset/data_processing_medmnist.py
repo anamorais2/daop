@@ -10,26 +10,14 @@ import DA.data_augmentation_albumentations as data_augmentation_albumentations
 
 
 class MedMNISTWrapperBase:
-    """
-    Classe base genérica que contém a lógica de __getitem__ para Albumentations
-    e replicação de canal (1 -> 3).
-    """
+   
     def __init__(self, *args, **kwargs):
         
-        # --- INÍCIO DAS CORREÇÕES ---
-        
-        # 1. Interceptar a transformação (Corrige o KeyError do Albumentations)
         self.albumentations_transform = kwargs.pop('transform', None) 
         kwargs['transform'] = None 
         
-        # 2. (NOVA CORREÇÃO) Interceptar o 'data_flag' (Corrige o TypeError)
-        # O data_flag é usado para selecionar a DataClass, 
-        # mas não deve ser passado para o construtor MedMNIST.
         kwargs.pop('data_flag', None) # Remove 'data_flag' de kwargs
             
-        # --- FIM DAS CORREÇÕES ---
-
-        # Agora, kwargs está limpo (sem 'transform' e 'data_flag')
         super().__init__(*args, **kwargs)
         self.pil = True 
 
@@ -48,18 +36,12 @@ class MedMNISTWrapperBase:
 
         return img, torch.tensor(target).squeeze()
 
-# ==============================================================================
-# 2. Transformações de Pré-Processamento
-# ==============================================================================
     
 def dataset_transforms():
     mean = [0.5, 0.5, 0.5]
     std = [0.5, 0.5, 0.5]
     return [], [A.Normalize(mean=mean, std=std), ToTensorV2()]
 
-# ==============================================================================
-# 3. Funções de Carregamento de Dados (SL)
-# ==============================================================================
     
 def load_dataset(individual, config):
     data_flag = config.get('dataset', 'breastmnist') 
@@ -89,11 +71,9 @@ def load_dataset(individual, config):
     sl_augs = data_augmentation_albumentations.map_augments(sl_augs_list, config)
     transform_train = A.Compose(transforms_before_augs + sl_augs + transforms_after_augs)
 
-    # Carregar Datasets (Genérico)
     info = INFO[data_flag]
     DataClass = getattr(medmnist_dataset, info['python_class'])
     
-    # Criar a classe wrapper dinamicamente
     class SpecificMedMNISTWrapper(MedMNISTWrapperBase, DataClass):
          def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -101,7 +81,6 @@ def load_dataset(individual, config):
     print(f"Loading dataset {data_flag} from {config['cache_folder']}/ (SL Mode)")
     download_needed = not os.path.exists(os.path.join(config['cache_folder'], data_flag + '.npz'))
     
-    # Passar o data_flag (será removido pelo wrapper)
     trainset = SpecificMedMNISTWrapper(data_flag=data_flag, split='train', 
         download=download_needed, transform=transform_train, root=config['cache_folder'])
     
@@ -112,10 +91,7 @@ def load_dataset(individual, config):
     
     return trainset, testset
 
-# ==============================================================================
-# 4. Funções de Criação de Data Loaders (SL)
-# ==============================================================================
-    
+
 def create_data_loaders(trainset, testset, config):
     print("Creating data loaders (SL Mode)")
     batch_size = config.get('batch_size', 128)

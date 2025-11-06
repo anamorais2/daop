@@ -50,7 +50,6 @@ config['batch_size'] = 128
 config['num_workers'] = 4
 config['shuffle_dataset'] = True
 
-# Funções de Avaliação (Apontando para o pipeline SL)
 config['individual_evaluation_func'] = train_with_DA.train_and_evaluate_individual
 config['model_evaluate_func'] = sl_evaluation_medmnist.evaluate_sl
 

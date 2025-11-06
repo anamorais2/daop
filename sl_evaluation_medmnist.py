@@ -194,7 +194,7 @@ def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
         # Calcular dados da Curva (FPR/TPR) para o plot final
         fpr, tpr, thresholds = roc_curve(labels_binary, probs_binary)
         
-        print(f"SL Test AUC (Binário): {roc_auc:.4f}")
+        print(f"SL Test AUC (2-Class): {roc_auc:.4f}")
         
     else:
         # 2. MULTI-CLASSE (ex: ChestMNIST)
@@ -206,9 +206,9 @@ def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
                 multi_class='ovr',
                 average='weighted' 
             )
-            print(f"SL Test AUC (Multi-Classe, OVR Ponderado): {roc_auc:.4f}")
+            print(f"SL Test AUC (Multi-Class, OVR Weighted): {roc_auc:.4f}")
         except ValueError as e:
-            print(f"AVISO: Não foi possível calcular o AUC Multi-Classe. {e}")
+            print(f"WARNING: Could not compute Multi-Class AUC. {e}")
             roc_auc = -1.0 # Valor de erro
             
             # Dados da curva FPR/TPR não são diretamente aplicáveis em multi-classe
