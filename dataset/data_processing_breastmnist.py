@@ -13,7 +13,7 @@ import DA.data_augmentation_albumentations as data_augmentation_albumentations
 # 1. Definições e Wrapper do Dataset
 # ==============================================================================
 
-DATA_FLAG = 'breastmnist'
+DATA_FLAG = 'bloodmnist'
 INFO_BREAST = INFO[DATA_FLAG]
 DataClass = getattr(medmnist_dataset, INFO_BREAST['python_class'])
 
@@ -172,10 +172,6 @@ def create_data_loaders(trainset_pretext, trainset_downstream, testset_pretext, 
     return trainloader_pretext, trainloader_downstream, testloader_pretext, testloader_downstream
     
     
-   # No dataset/data_processing_breastmnist.py
-
-# ... (Mantenha o wrapper BreastMNISTAlbumentations e dataset_transforms) ...
-
 # ==============================================================================
 # 3. Funções de Carregamento de Dados (Simplificado para SL)
 # ==============================================================================
@@ -183,6 +179,7 @@ def create_data_loaders(trainset_pretext, trainset_downstream, testset_pretext, 
 def load_dataset_simple(individual, config):
     """
     Carrega apenas os datasets de Treino (com DA) e Teste (sem DA).
+    CORREÇÃO: Usa APENAS downstream augs quando fix_pretext_da está definido.
     """
     if not os.path.exists(config['cache_folder']):
         print(f"Folder {config['cache_folder']} does not exist, creating it")
@@ -196,49 +193,52 @@ def load_dataset_simple(individual, config):
 
     # 2. Transformação de Treino (SL)
     
-    augs_genotype = individual[0] # O genótipo (a lista de aumentos)
-    sl_augs_list = [] # Inicializar a lista de aumentos
-
-    # --- INÍCIO DA CORREÇÃO ---
-    # Verificamos a estrutura do genótipo para garantir que map_augments recebe uma lista de listas
+    # CORREÇÃO PRINCIPAL: Detectar se estamos em modo DO (Downstream Optimization)
+    # Se fix_pretext_da está definido, então individual = [pretext_fixed, downstream_to_evolve]
+    # Caso contrário, individual = [augs_to_evolve] (SL puro)
     
-    if (len(augs_genotype) > 0 and 
-        isinstance(augs_genotype[0], list) and 
-        isinstance(augs_genotype[0][0], int)):
-        # CASO 1: Genótipo SL (Supervised Learning) [ [Aug 1], [Aug 2], ... ]
-        # Ex: [ [1, [params]], [37, [params]] ]
-        sl_augs_list = augs_genotype
-        print(f"SL Augs (from SL genotype): {sl_augs_list}")
-
-    elif (len(augs_genotype) == 2 and 
-          isinstance(augs_genotype[0], list) and 
-          isinstance(augs_genotype[1], list)):
-        # CASO 2: Genótipo DO (Downstream Opt) [ [Pretext_List], [Downstream_List] ]
-        # Ex: [ [[0, [p]]], [[1, [p]], [37, [p]]] ]
-        sl_augs_list = augs_genotype[1] # Usamos apenas a lista Downstream
-        print(f"SL Augs (from DO genotype): {sl_augs_list}")
-        
-    elif (len(augs_genotype) == 2 and 
-          isinstance(augs_genotype[0], int) and 
-          isinstance(augs_genotype[1], list)):
-        # CASO 3: Genótipo é uma ÚNICA AUG (O seu erro atual)
-        # Ex: [ 1, [0.5,...] ]
-        # Devemos envolvê-lo numa lista para map_augments:
-        sl_augs_list = [ augs_genotype ]
-        print(f"SL Augs (Single Aug wrapped): {sl_augs_list}")
-    
+    if config.get('fix_pretext_da') is not None:
+        # Modo DO: usar APENAS downstream (individual[1])
+        augs_genotype = individual[1]
+        print(f"DO Mode detected - using downstream augs from individual[1]")
     else:
-        # Caso de fallback (pode ser uma lista vazia ou estrutura desconhecida)
-        sl_augs_list = augs_genotype
-        print(f"SL Augs (Fallback): {sl_augs_list}")
+        # Modo SL puro: usar individual[0]
+        augs_genotype = individual[0]
+        print(f"SL Mode detected - using genotype from individual[0]")
     
-    # --- FIM DA CORREÇÃO ---
+    # Agora processar augs_genotype para obter a lista de augmentations
+    sl_augs_list = []
+    
+    if not augs_genotype or len(augs_genotype) == 0:
+        # Lista vazia - sem augmentations
+        sl_augs_list = []
+        print(f"SL Augs: Empty (no augmentations)")
+        
+    elif isinstance(augs_genotype[0], list):
+        # Lista de augmentations [[id, params], [id, params], ...]
+        if len(augs_genotype[0]) == 2 and isinstance(augs_genotype[0][0], int):
+            sl_augs_list = augs_genotype
+            print(f"SL Augs (list of augs): {sl_augs_list}")
+        else:
+            # Caso inesperado
+            sl_augs_list = augs_genotype
+            print(f"SL Augs (nested list - fallback): {sl_augs_list}")
+            
+    elif len(augs_genotype) == 2 and isinstance(augs_genotype[0], int):
+        # Single aug [id, params] - envolver em lista
+        sl_augs_list = [augs_genotype]
+        print(f"SL Augs (single aug wrapped): {sl_augs_list}")
+        
+    else:
+        # Fallback genérico
+        sl_augs_list = augs_genotype
+        print(f"SL Augs (fallback): {sl_augs_list}")
 
+    # Mapear os aumentos usando a função de mapeamento
     sl_augs = data_augmentation_albumentations.map_augments(sl_augs_list, config)
     transform_train = A.Compose(transforms_before_augs + sl_augs + transforms_after_augs)
 
-    # ... (O resto da função de carregamento: download, BreastMNISTAlbumentations, etc.)
-
+    # Carregamento dos datasets
     print(f"Loading dataset {DATA_FLAG} from {config['cache_folder']}/ (SL Mode)")
     download_needed = not os.path.exists(os.path.join(config['cache_folder'], DATA_FLAG + '.npz'))
     
