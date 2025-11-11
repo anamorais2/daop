@@ -6,9 +6,6 @@ from sklearn.metrics import roc_curve, auc
 from analysis.plot_roc import plot_roc_curve_and_save
 
 
-# ==============================================================================
-# 1. Funções de Collation para RotNet (Corrigido o Canal 1->3)
-# ==============================================================================
 
 def rotnet_rotate_images(data):
     rotated_images = []
@@ -19,7 +16,7 @@ def rotnet_rotate_images(data):
         else:
             img = d
         
-        # Correção da replicação de canal (garantir 3 canais antes da rotação)
+        # Fix: replicate channel dimension (ensure 3 channels before rotation)
         if img.shape[0] == 1:
             img = img.repeat(3, 1, 1)
 
@@ -35,16 +32,15 @@ def rotnet_collate_fn(data):
     rotated_images = []
     rotated_labels = []
     for img, _ in data:
-        # img está no formato PyTorch (C, H, W).
         
-        # CORREÇÃO: Forçar a Replicação de Canal para 3 (para o ResNet)
+        # Fix: replicate channel dimension (ensure 3 channels before rotation)
         if img.shape[0] == 1:
-            img_3ch = img.repeat(3, 1, 1)  # Novo tensor (3, H, W)
+            img_3ch = img.repeat(3, 1, 1)  # New tensor (3, H, W)
         else:
             img_3ch = img
             
         for rotation in range(4):
-            # Rotacionar nas dimensões 1 (H) e 2 (W)
+            # Rotate over dimensions 1 (H) and 2 (W)
             rotated_img = torch.rot90(img_3ch, k=rotation, dims=(1, 2))
             
             rotated_images.append(rotated_img)
@@ -58,7 +54,6 @@ def rotnet_collate_fn_cuda(batch):
     # Rotate 0º
     data = torch.stack([item[0] for item in batch]).to('cuda')
     
-    # INSERIR REPLICAÇÃO DE CANAL para a GPU (se necessário)
     if data.shape[1] == 1:
          data = data.repeat(1, 3, 1, 1)
          
@@ -77,9 +72,7 @@ def rotnet_collate_fn_cuda(batch):
     return (torch.concatenate((data, data_90, data_180, data_270)),
             torch.concatenate((targets, targets_90, targets_180, targets_270)))
 
-# ==============================================================================
-# 2. Funções de Treino (Corrigido o Squeeze no Downstream)
-# ==============================================================================
+
 
 def train_pretext(model, trainloader_pretext, config):
     model.model = model.model.to(config['device'])
@@ -148,8 +141,8 @@ def test_pretext(model, testloader_pretext, device, confusion_matrix_config):
     with torch.no_grad():
         for data in testloader_pretext:
             images, labels = data[0].to(device), data[1].to(device)
-            
-            # ADICIONAR REPLICAÇÃO DE CANAL para loaders que não usam collate_fn
+
+            # ADD CHANNEL REPLICATION for loaders that do not use collate_fn
             if images.shape[1] == 1:
                 images = images.repeat(1, 3, 1, 1)
 
@@ -187,7 +180,7 @@ def train_downstream(model, trainloader_downstream, config):
     model.model.to(config['device'])
     model.model.train()
     criterion = model.criterion()
-    # Assume que o modelo tem uma camada 'fc' para finetuning
+
     optimizer = model.optimizer(model.model.fc.parameters())
 
     hist_loss = []
@@ -201,8 +194,8 @@ def train_downstream(model, trainloader_downstream, config):
                 print("Downstream START Epoch", epoch + 1, "Batch", i + 1)
 
             images, labels = data[0].to(config['device']), data[1].to(config['device'])
-           
-            # CORREÇÃO: ADICIONAR REPLICAÇÃO DE CANAL
+
+            # Fix: replicate channel dimension
             if images.shape[1] == 1:
                 images = images.repeat(1, 3, 1, 1) 
             
@@ -259,15 +252,15 @@ def test_downstream(model, testloader_downstream, device, confusion_matrix_confi
     with torch.no_grad():
         for data in testloader_downstream:
             images, labels = data[0].to(device), data[1].to(device)
-            
-            # CORREÇÃO: ADICIONAR REPLICAÇÃO DE CANAL
+
+            # Fix: replicate channel dimension
             if images.shape[1] == 1:
                 images = images.repeat(1, 3, 1, 1)
 
             outputs = model.model(images)
             
             
-            probs = torch.softmax(outputs, dim=1)[:, 1]  # Probabilidades da classe positiva
+            probs = torch.softmax(outputs, dim=1)[:, 1]  
             all_labels_downstream.extend(labels.cpu().numpy())
             all_probs_downstream.extend(probs.cpu().numpy())
 
@@ -296,7 +289,7 @@ def test_downstream(model, testloader_downstream, device, confusion_matrix_confi
             with open(confusion_matrix_path, 'a') as f:
                 f.write(f"{conf_matrix.tolist()}\n")
                 
-    # Calcular e guardar a Curva ROC            
+        
     fpr, tpr, thresholds = roc_curve(all_labels_downstream, all_probs_downstream)
     roc_auc = auc(fpr, tpr)
     print(f"Downstream Test AUC-ROC: {roc_auc:.4f}")

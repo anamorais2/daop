@@ -3,9 +3,11 @@ import torch
 import sys
 import os
 from sklearn.metrics import roc_curve, auc
-from sklearn.metrics import roc_curve, auc, roc_auc_score
+from analysis import plot_roc
+from analysis.plot_roc import plot_roc_curve_and_save
 from torcheval.metrics.functional import multiclass_confusion_matrix
-
+from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve, auc, roc_auc_score
 
 
 def train_sl(model, trainloader, config):
@@ -24,8 +26,8 @@ def train_sl(model, trainloader, config):
         
         for i, data in enumerate(trainloader, 0):
             images, labels = data[0].to(config['device']), data[1].to(config['device'])
-            
-            # Garante 3 Canais (Replicação de canal, essencial para ResNet)
+
+            # Ensure 3 Channels (Channel replication, essential for ResNet)
             if images.shape[1] == 1:
                 images = images.repeat(1, 3, 1, 1) 
 
@@ -77,8 +79,8 @@ def test_sl(model, testloader, device, confusion_matrix_config, config):
     with torch.no_grad():
         for data in testloader:
             images, labels = data[0].to(device), data[1].to(device)
-            
-            # Garantir 3 Canais (Replicação de canal)
+
+            # Ensure 3 Channels (Channel replication)
             if images.shape[1] == 1:
                 images = images.repeat(1, 3, 1, 1)
 
@@ -110,8 +112,8 @@ def test_sl(model, testloader, device, confusion_matrix_config, config):
     if confusion_matrix_config:
         all_labels_cm = torch.tensor(all_labels_cm)
         all_predicted_cm = torch.tensor(all_predicted_cm)
-        
-        # Obter o número de classes do config (o 2 do BreastMNIST)
+
+        # Get the number of classes from the config (2 for BreastMNIST)
         num_classes = confusion_matrix_config.get('num_classes_downstream', config.get('num_classes', 2))
         
         conf_matrix = multiclass_confusion_matrix(all_labels_cm, all_predicted_cm, num_classes=num_classes)
@@ -145,7 +147,7 @@ def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
         all_predicted_cm = [] 
         all_labels_cm = []
 
-    # Obter o número de classes (2 para BreastMNIST, 14 para ChestMNIST)
+    # Get the number of classes (2 for BreastMNIST, 14 for ChestMNIST)
     if confusion_matrix_config:
          num_classes = confusion_matrix_config.get('num_classes_downstream', config.get('num_classes', 2))
     else:
@@ -179,26 +181,23 @@ def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
     all_outputs_tensor = torch.cat(all_outputs_list)
     all_probs_tensor = torch.softmax(all_outputs_tensor, dim=1)
 
-    
-    fpr, tpr = None, None 
+    fpr, tpr = None, None
 
     if num_classes == 2:
-        # 1. BINÁRIO (ex: BreastMNIST)
-        # Extrair probabilidades da classe positiva (índice 1)
+        # 1. BINARY (ex: BreastMNIST)
+        # Extract probabilities of the positive class (index 1)
         probs_binary = all_probs_tensor[:, 1].numpy()
         labels_binary = all_labels_tensor.numpy()
         
-        # Calcular AUC (escalar)
         roc_auc = roc_auc_score(labels_binary, probs_binary)
-        
-        # Calcular dados da Curva (FPR/TPR) para o plot final
+       
         fpr, tpr, thresholds = roc_curve(labels_binary, probs_binary)
         
         print(f"SL Test AUC (2-Class): {roc_auc:.4f}")
         
     else:
-        # 2. MULTI-CLASSE (ex: ChestMNIST)
-        # Usamos roc_auc_score com One-vs-Rest (ovr) e média 'weighted'
+        # 2. MULTI-CLASS (e.g. ChestMNIST)
+        # Use roc_auc_score with One-vs-Rest (ovr) and 'weighted' average
         try:
             roc_auc = roc_auc_score(
                 all_labels_tensor.numpy(),
@@ -209,9 +208,9 @@ def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
             print(f"SL Test AUC (Multi-Class, OVR Weighted): {roc_auc:.4f}")
         except ValueError as e:
             print(f"WARNING: Could not compute Multi-Class AUC. {e}")
-            roc_auc = -1.0 # Valor de erro
-            
-            # Dados da curva FPR/TPR não são diretamente aplicáveis em multi-classe
+            roc_auc = -1.0 # Error value
+
+            # FPR/TPR curve data is not directly applicable in multi-class
         fpr, tpr = None, None
 
     if confusion_matrix_config:
@@ -235,14 +234,17 @@ def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
 
 
 def evaluate_sl(trainloader, testloader, config):
-    model = config['model']() 
+
+    num_classes = config.get('num_classes_downstream', config.get('num_classes', 2))
+    model = config['model'](num_classes_downstream=num_classes)
+
 
     sl_hist_loss, sl_hist_acc = train_sl(model, trainloader, config)
 
     sl_acc, sl_auc, fpr, tpr = test_sl_multi(model, testloader, config['device'], config['confusion_matrix_config'], config)
 
-    # O EA espera 3 retornos. O pretext_acc agora é inútil (-1)
-    # Retornamos a accuracy final, uma accuracy de pretext inútil (-1), e o histórico.
+    # The EA expects 3 returns. pretext_acc is now unused (-1).
+    # Return: final SL accuracy, a placeholder pretext accuracy (-1), and the history dict.
     return sl_acc, -1, {"sl_loss": sl_hist_loss, 
                         "sl_acc": sl_hist_acc, 
                         "sl_auc": sl_auc,

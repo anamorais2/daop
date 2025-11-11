@@ -3,7 +3,6 @@ import torch.nn as nn
 
 import torchvision
 
-#Nota: Não esquecer o número de classes correto ao instanciar a classe
 
 class ProjectorBlockResNet18(nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -102,15 +101,12 @@ class TrainResNet50():
 
 
 
-#-----------------------------------------------------
-
 class TrainResNet18Simple():
     def __init__(self, num_classes_downstream=2):
         self.model = torchvision.models.resnet18(weights=None)
         self.num_classes_downstream = num_classes_downstream
-        
-        # O ResNet18 padrão tem 512 features no final.
-        # Substituímos o FC para a nossa tarefa binária (2 classes).
+
+        # The standard ResNet18 has 512 features at the end.
         self.model.fc = nn.Linear(512, self.num_classes_downstream)
 
         self.criterion = nn.CrossEntropyLoss
@@ -129,9 +125,8 @@ class TrainResNet50Simple():
     def __init__(self, num_classes_downstream=2):
         self.model = torchvision.models.resnet50(weights=None)
         self.num_classes_downstream = num_classes_downstream
-        
-        # O ResNet50 padrão tem 2048 features no final.
-        # Substituímos o FC para a nossa tarefa binária (2 classes).
+
+        # The standard ResNet50 has 2048 features at the end.
         self.model.fc = nn.Linear(2048, self.num_classes_downstream)
         
         self.criterion = nn.CrossEntropyLoss

@@ -16,20 +16,17 @@ ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 
 # START_PARENT = [[43, [0.33, 0.56, 0.35, 0.32]]]
 
-DATA_FLAG = 'breastmnist'
+DATA_FLAG = 'bloodmnist'
 RESNET_FLAG = 'resnet18'
-NUM_CLASSES_MEDMNIST = 2 
+NUM_CLASSES_MEDMNIST = 8 
 
 config = {}
 
-
-config['model'] = net_models_torch.TrainResNet18Simple 
-
-if config['model'] == net_models_torch.TrainResNet18Simple:
-    RESNET_FLAG = 'resnet18'
+if RESNET_FLAG == 'resnet18':
+    config['model'] = net_models_torch.TrainResNet18Simple 
     
 else:
-    RESNET_FLAG = 'resnet50'
+    config['model'] = net_models_torch.TrainResNet50Simple 
 
 
 # experiment configs
@@ -69,7 +66,7 @@ config['device'] = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device {config['device']}")
 # config['shuffle_dataset'] = False     # shuffle with sampler
 config['evolution_type'] = "simultaneous"   # "same"/"simultaneous"
-config['fix_pretext_da'] = ROTNET_DA                                    # ROTNET_DA --------------------- DA
+config['fix_pretext_da'] = []                                    # ROTNET_DA --------------------- DA
 config['fix_downstream_da'] = None      # ROTNET_DA
 # config['base_pretrained_pretext_model'] = os.path.join("models", "rn_pretext_0.pt")
 # config['pretrained_pretext_model'] = config['base_pretrained_pretext_model']

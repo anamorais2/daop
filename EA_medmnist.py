@@ -9,7 +9,7 @@ from pympler.tracker import SummaryTracker
 import sl_evaluation_medmnist as sl_evaluation_medmnist
 import pandas as pd
 import os
-import numpy as np 
+import numpy as np
 
 def write_gen_stats(config, gen, population, best_individual, best_auc):
     avg_fitness = np.mean([individual[1] for individual in population])
@@ -24,11 +24,12 @@ def write_gen_stats(config, gen, population, best_individual, best_auc):
     file_path = os.path.join(config['output_csv_folder'], f'{config["dataset"]}_{config["experiment_name"]}_{config["seed"]}.csv')
     file_path_backup = os.path.join(config['output_csv_folder'], f'{config["dataset"]}_{config["experiment_name"]}_{config["seed"]}_backup.csv')
 
-
-    # (Removendo os arrays 'fpr' e 'tpr' do histórico 'individual[4]')
+    # --- Clean curve data (to avoid polluting the CSV) ---
+    # Create a "clean" copy of the population to save in the CSV
+    # (Removing 'fpr' and 'tpr' arrays from the training history at individual[4])
     population_to_save = []
     for ind in population:
-        if ind[4] is not None: # Se houver histórico
+        if ind[4] is not None:  # If there is history
             history_copy = ind[4].copy()
             if 'fpr' in history_copy:
                 del history_copy['fpr']
@@ -66,9 +67,9 @@ def create_individual(config):
             print("Same evolution type creation")
             chromosomes = [config['create_chromosome']() for _ in range(random.randint(1, config['max_chromosomes']))]
             if config['fix_pretext_da'] is None:
-                genotype[0] = chromosomes  
+                genotype[0] = chromosomes   # pretext chromosomes
             if config['fix_downstream_da'] is None:
-                genotype[1] = chromosomes  
+                genotype[1] = chromosomes   # downstream chromosomes
         elif config['evolution_type'] == 'simultaneous':
             print("Simultaneous evolution type creation")
             if config['fix_pretext_da'] is None:
@@ -111,6 +112,7 @@ def ea(config):
 
         evolution_mod(config, past_gen=True)
 
+    # main evolution loop
     for gen in range(config['start_gen'], config['stop_gen']+1):
         if config['max_generations_per_run'] is not None:
             config['current_run_generations'] += 1
@@ -127,6 +129,7 @@ def ea(config):
             print(f"Running evolution mod for generation {gen}")
             config['evolution_mods'][gen](config)
 
+        # new generation population
         if config['start_population'] is None:
             population = [copy.deepcopy(best_gen_individual)]
             for _ in range(config['population_size']-1):
@@ -198,7 +201,7 @@ def ea(config):
         # best individual
         best_gen_individual = copy.deepcopy(max(population, key=lambda x: x[1]))
         
-        # 1. Extrair o AUC
+    
         best_auc_value = best_gen_individual[4].get('sl_auc', -1)
         
         write_gen_stats(config, gen, population, best_gen_individual, best_auc_value)
@@ -258,7 +261,7 @@ def ea(config):
 
             individual[3] = end_time - start_time
 
-            print(f"Top {iG+1}/{len(population)} individual isolated extended run accuracy: {individual[1]:.2f}")
+            print(f"Top {i+1}/{len(population)} individual isolated extended run accuracy: {individual[1]:.2f}")
             print(f"Top {i+1}/{len(population)} individual isolated extended run training time: {individual[3]:.2f} seconds")
 
      
