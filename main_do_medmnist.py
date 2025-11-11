@@ -1,25 +1,20 @@
 import os
 import sys
-
 import pandas as pd
 import ast
-
 import analysis.plot_roc as plot_roc
-
-import configs.config_base_medmnist as config_base
+import configs.config_base as config_base
 import EA_medmnist as EA
 
 
 def completed_run(config):
     file_path = os.path.join(config['output_csv_folder'], f'{config["dataset"]}_{config["experiment_name"]}_{config["seed"]}.csv')
 
-    # Check if the file exists
+  
     if not os.path.exists(file_path):
-        return False 
-                          
+        return False
 
-    # Check if the stop_gen has been reached
-    # print(file_path)
+
     df = pd.read_csv(file_path, sep=';')
     max_gen = df['generation'].iloc[-1]
     stop_gen = config['stop_gen'] + 1 if config['extended_isolated_run'] else config['stop_gen']
@@ -66,7 +61,9 @@ def reset_config(config):
     config['best_individuals'] = []
     config['state_file'] = None
     config['epochs'] = config['base_epochs']
-  
+    config['pretext_epochs'] = config['base_pretext_epochs']
+    config['downstream_epochs'] = config['base_downstream_epochs']
+    config['pretrained_pretext_model'] = config['base_pretrained_pretext_model']
     
     
 def generate_final_roc_plot(config):
@@ -74,13 +71,12 @@ def generate_final_roc_plot(config):
     file_path = os.path.join(config['output_csv_folder'], f'{config["dataset"]}_{config["experiment_name"]}_{config["seed"]}.csv')
     
     if not os.path.exists(file_path):
-        print(f"ERRO: O ficheiro de resultados {file_path} não existe. Impossível gerar a plotagem ROC final.")
+        print(f"ERROR: Results file {file_path} does not exist. Cannot generate final ROC plot.")
         return
 
     df = pd.read_csv(file_path, sep=';')
     
-    # 1. Encontrar a linha com a melhor fitness (AUC ou Accuracy)
-    # Usamos 'best_auc' que foi guardado pelo EA_simple.py
+    # Select the row with the highest recorded best_auc
     best_row = df.loc[df['best_auc'].idxmax()]
     
     best_genotype_str = best_row['best_individual']
@@ -89,27 +85,23 @@ def generate_final_roc_plot(config):
     try:
         best_genotype = ast.literal_eval(best_genotype_str)
     except Exception as e:
-        print(f"ERRO: Falha ao interpretar o genótipo para plotagem. {e}")
+        print(f"ERROR: Failed to parse genotype string for plotting. {e}")
         return
     
-    print(f"\n--- INICIANDO PLOTAGEM ROC FINAL (Seed {config['seed']}) ---")
-    print(f"Melhor Política DA (Genótipo) Encontrada. AUC: {best_auc:.4f}")
+    print(f"\n--- STARTING FINAL ROC PLOT (Seed {config['seed']}) ---")
+    print(f"Best DA policy (genotype) found. AUC: {best_auc:.4f}")
     
-    # 2. REAVALIAÇÃO FINAL (CHAMADA À FUNÇÃO DE TREINO/TESTE)
-    # Reavaliamos o melhor genótipo para obter os dados brutos da curva (FPR/TPR)
-    # Usamos a função de avaliação do config (que aponta para train_with_DA.py)
+    # 2. FINAL RE-EVALUATION (CALL TRAIN/EVALUATION FUNCTION)
+    # Re-evaluate the best genotype to obtain raw curve data (FPR/TPR).
+    # We call the evaluation function stored in config (typically train_with_DA.py).
+    #
+    # NOTE: This will retrain the model (e.g. for base_epochs). To avoid retraining,
+    # modify the evaluation function to support loading a saved model / test-only mode.
     
-    # ATENÇÃO: Isto irá retreinar o modelo (ex: 20 épocas).
-    # Se quiser evitar o retreino, teria de modificar o train_with_DA.py
-    # para aceitar uma flag 'test_only=True' e carregar o modelo guardado.
-    
-    # Por agora, vamos assumir que a reavaliação completa é aceitável:
-    
-    print("A reavaliar o melhor indivíduo para obter dados da curva (FPR/TPR)...")
+    print("Re-evaluating best individual to obtain curve data (FPR/TPR)...")
     _, _, history = config['individual_evaluation_func'](best_genotype, config)
     
-    
-    # 3. Extrair os dados brutos e Plotar
+    # 3. Extract raw data and plot
     fpr_final = history.get('fpr') 
     tpr_final = history.get('tpr')
     
@@ -117,11 +109,11 @@ def generate_final_roc_plot(config):
         file_name_prefix = f"{config['dataset']}_{config['experiment_name']}_{config['seed']}_FINAL_ROC"
         output_folder = os.path.join(config['output_csv_folder'], 'final_plots')
         
-        # Chama o script de plotting (plot_roc.py)
+        # Call plotting utility (plot_roc.py)
         plot_roc.plot_roc_curve_and_save(fpr_final, tpr_final, best_auc, file_name_prefix, output_folder)
-        print(f"Plotagem ROC Final Concluída.")
+        print("Final ROC plot completed.")
     else:
-        print("Atenção: Não foi possível obter os dados FPR/TPR. Verifique o retorno do sl_evaluation.py.")
+        print("Warning: Could not obtain FPR/TPR data. Check the return value of the evaluation function.")
 
 
 skip_runs = [
