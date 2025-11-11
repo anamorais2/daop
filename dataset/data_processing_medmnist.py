@@ -2,18 +2,16 @@ import os
 import torch
 import torchvision.transforms as transforms
 import albumentations as A
-import numpy as np # Importar NumPy para manipulação de array
+import numpy as np 
 from albumentations.pytorch import ToTensorV2
 from medmnist import INFO, Evaluator, dataset as medmnist_dataset
 
 import rotnet_torch
 import DA.data_augmentation_albumentations as data_augmentation_albumentations
+import configs.config_base as config
 
-# ==============================================================================
-# 1. Definições e Wrapper do Dataset
-# ==============================================================================
 
-DATA_FLAG = 'bloodmnist'
+DATA_FLAG = config['dataset']
 INFO_BREAST = INFO[DATA_FLAG]
 DataClass = getattr(medmnist_dataset, INFO_BREAST['python_class'])
 
