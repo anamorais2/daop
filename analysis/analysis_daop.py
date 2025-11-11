@@ -7,7 +7,6 @@ import sys
 
 def analyze_single_file(file_path, output_filename, dataset_name, network_name):
 
-    # --- Load Data ---
     try:
         df = pd.read_csv(file_path, sep=';')
     except Exception as e:
@@ -119,7 +118,7 @@ if __name__ == "__main__":
     }
 
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
-    parent_dir = os.path.dirname(current_script_dir) # This is /home/arya/Documents/carolina/daop
+    parent_dir = os.path.dirname(current_script_dir) 
     
     output_plot_dir = os.path.join(parent_dir, 'analysis_results')
     os.makedirs(output_plot_dir, exist_ok=True)

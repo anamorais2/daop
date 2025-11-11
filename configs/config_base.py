@@ -1,5 +1,4 @@
 import torch
-import dataset.data_processing_rotnet_cifar as data_processing_rotnet_cifar
 import DA.data_augmentation_albumentations as data_augmentation_albumentations
 import net_models_torch
 import rotnet_torch
@@ -8,7 +7,7 @@ import mutations
 import chromosomes
 import train_with_DA
 import evolution_mod_functions
-import dataset.data_processing_breastmnist as data_processing_medmnist
+import dataset.data_processing_medmnist as data_processing_medmnist
 import sl_evaluation_medmnist as sl_evaluation_medmnist
 
 ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
