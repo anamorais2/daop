@@ -190,6 +190,7 @@ def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
         labels_binary = all_labels_tensor.numpy()
         
         roc_auc = roc_auc_score(labels_binary, probs_binary)
+        auc_std = 0.0  # Placeholder, can compute std if needed
        
         fpr, tpr, thresholds = roc_curve(labels_binary, probs_binary)
         
@@ -199,16 +200,21 @@ def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
         # 2. MULTI-CLASS (e.g. ChestMNIST)
         # Use roc_auc_score with One-vs-Rest (ovr) and 'weighted' average
         try:
-            roc_auc = roc_auc_score(
+            roc_auc_per_class = roc_auc_score(
                 all_labels_tensor.numpy(),
                 all_probs_tensor.numpy(),
                 multi_class='ovr',
-                average='weighted' 
+                average=None 
             )
-            print(f"SL Test AUC (Multi-Class, OVR Weighted): {roc_auc:.4f}")
+
+            roc_auc = np.mean(roc_auc_per_class)
+            auc_std = np.std(roc_auc_per_class)
+
+            print(f"SL Test AUC (Multi-Class, OVR Weighted): {roc_auc:.4f} ± {auc_std:.4f}")
         except ValueError as e:
             print(f"WARNING: Could not compute Multi-Class AUC. {e}")
             roc_auc = -1.0 # Error value
+            auc_std = 0.0
 
             # FPR/TPR curve data is not directly applicable in multi-class
         fpr, tpr = None, None
@@ -230,7 +236,7 @@ def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
             with open(confusion_matrix_path, 'a') as f:
                 f.write(f"Generation: {config.get('generation', 'Final')}\n{conf_matrix.tolist()}\n\n")
 
-    return sl_acc, roc_auc, fpr, tpr
+    return sl_acc, roc_auc, auc_std, fpr, tpr
 
 
 def evaluate_sl(trainloader, testloader, config):
@@ -241,12 +247,14 @@ def evaluate_sl(trainloader, testloader, config):
 
     sl_hist_loss, sl_hist_acc = train_sl(model, trainloader, config)
 
-    sl_acc, sl_auc, fpr, tpr = test_sl_multi(model, testloader, config['device'], config['confusion_matrix_config'], config)
+    sl_acc, sl_auc, auc_std, fpr, tpr = test_sl_multi(model, testloader, config['device'], config['confusion_matrix_config'], config)
 
     # The EA expects 3 returns. pretext_acc is now unused (-1).
     # Return: final SL accuracy, a placeholder pretext accuracy (-1), and the history dict.
     return sl_acc, -1, {"sl_loss": sl_hist_loss, 
                         "sl_acc": sl_hist_acc, 
                         "sl_auc": sl_auc,
+                        "auc_std": auc_std,
                         "fpr": fpr,
-                        "tpr": tpr}
+                        "tpr": tpr
+                        }

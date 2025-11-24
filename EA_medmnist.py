@@ -11,7 +11,7 @@ import pandas as pd
 import os
 import numpy as np
 
-def write_gen_stats(config, gen, population, best_individual, best_auc):
+def write_gen_stats(config, gen, population, best_individual, best_auc, best_auc_std):
     avg_fitness = np.mean([individual[1] for individual in population])
     std_fitness = np.std([individual[1] for individual in population])
     best_fitness = best_individual[1]
@@ -42,15 +42,15 @@ def write_gen_stats(config, gen, population, best_individual, best_auc):
     try:
         with open(file_path, 'a') as stats_file:
             if gen == 1:
-                stats_file.write('generation;avg_fitness;std_fitness;best_fitness;best_auc;total_time;best_individual;population\n')
+                stats_file.write('generation;avg_fitness;std_fitness;best_fitness;best_auc;best_auc_std;total_time;best_individual;population\n')
             
-            stats_file.write(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{total_time};{best_individual_genotype};{population_to_save}\n')
+            stats_file.write(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{best_auc_std};{total_time};{best_individual_genotype};{population_to_save}\n')
     except Exception as e:
         print(f"Error writing stats to file {file_path}: {e}")
         try:
             with open(file_path_backup, 'a') as stats_file:
-                stats_file.write('generation;avg_fitness;std_fitness;best_fitness;best_auc;total_time;best_individual;population\n')
-                stats_file.write(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{total_time};{best_individual_genotype};{population_to_save}\n')
+                stats_file.write('generation;avg_fitness;std_fitness;best_fitness;best_auc;best_auc_std;total_time;best_individual;population\n')
+                stats_file.write(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{best_auc_std};{total_time};{best_individual_genotype};{population_to_save}\n')
         except Exception as e:
             print(f"Error writing stats to backup file {file_path_backup}: {e}")
             print(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{total_time};{best_individual_genotype};{population_to_save}')
@@ -203,8 +203,9 @@ def ea(config):
         
     
         best_auc_value = best_gen_individual[4].get('sl_auc', -1)
+        best_auc_std = best_gen_individual[4].get('auc_std', 0.0)
         
-        write_gen_stats(config, gen, population, best_gen_individual, best_auc_value)
+        write_gen_stats(config, gen, population, best_gen_individual, best_auc_value, best_auc_std)
 
         if config['save_state']:
             config['save_state'](config)
@@ -266,6 +267,7 @@ def ea(config):
 
      
         extended_best_individual = max(population, key=lambda x: x[1])
-        extended_best_auc = max([ind[4].get('sl_auc', -1) for ind in population if ind[4] is not None])
-
-        write_gen_stats(config, gen+1, population=population, best_individual=extended_best_individual, best_auc=extended_best_auc)
+        extended_best_auc = extended_best_individual[4].get('sl_auc', -1)
+        extended_best_auc_std = extended_best_individual[4].get('auc_std', 0.0)
+        
+        write_gen_stats(config, gen+1, population=population, best_individual=extended_best_individual, best_auc=extended_best_auc, best_auc_std=extended_best_auc_std)

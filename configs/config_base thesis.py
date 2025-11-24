@@ -17,7 +17,7 @@ ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 # START_PARENT = [[43, [0.33, 0.56, 0.35, 0.32]]]
 
 DATA_FLAG = 'dermamnist' # DermaMNIST
-RESNET_FLAG = 'resnet50'
+RESNET_FLAG = 'resnet18'
 NUM_CLASSES_MEDMNIST = 7 
 
 config = {}
