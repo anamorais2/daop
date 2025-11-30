@@ -56,82 +56,104 @@ def train_sl(model, trainloader, config):
     print("Finished Supervised Learning (SL) training")
     return hist_loss, hist_acc
 
-
-
-def test_sl(model, testloader, device, confusion_matrix_config, config):
-    device = config['device']
-    confusion_matrix_config = config.get('confusion_matrix_config') 
-
-    model.model.to(device)
+def run_inference(model, loader, device, confusion_matrix_config=None, config=None):
+    """
+    Executa inferência num loader e retorna métricas.
+    """
     model.model.eval()
     correct = 0
     total = 0
 
-
-    all_labels_sl = []
-    all_probs_sl = []
+    all_labels_list = []
+    all_outputs_list = [] 
     
+    # Listas para Matriz de Confusão (apenas se config for passada)
+    all_predicted_cm = []
+    all_labels_cm = []
 
-    if confusion_matrix_config:
-        all_labels_cm = []
-        all_predicted_cm = []
+    # Obter número de classes se config estiver disponível
+    num_classes = 2
+    if config:
+        if confusion_matrix_config:
+             num_classes = confusion_matrix_config.get('num_classes_downstream', config.get('num_classes', 2))
+        else:
+             num_classes = config.get('num_classes_downstream', config.get('num_classes', 2))
 
     with torch.no_grad():
-        for data in testloader:
+        for data in loader:
             images, labels = data[0].to(device), data[1].to(device)
-
-            # Ensure 3 Channels (Channel replication)
+            
             if images.shape[1] == 1:
                 images = images.repeat(1, 3, 1, 1)
 
             outputs = model.model(images)
             
-        
-            probs = torch.softmax(outputs, dim=1)[:, 1] 
-            all_probs_sl.extend(probs.cpu().numpy())
-            all_labels_sl.extend(labels.cpu().numpy()) 
-
-        
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
- 
+            all_labels_list.append(labels.cpu())
+            all_outputs_list.append(outputs.cpu())
+
             if confusion_matrix_config:
-                all_labels_cm.extend(labels.cpu().tolist())
                 all_predicted_cm.extend(predicted.cpu().tolist())
+                all_labels_cm.extend(labels.cpu().tolist())
 
-    sl_acc = correct / total
-    print(f"SL Test Accuracy: {sl_acc * 100:.2f}%")
+    acc = correct / total
+    
+    all_labels_tensor = torch.cat(all_labels_list)
+    all_outputs_tensor = torch.cat(all_outputs_list)
+    all_probs_tensor = torch.softmax(all_outputs_tensor, dim=1)
 
-    fpr, tpr, thresholds = roc_curve(all_labels_sl, all_probs_sl)
-    roc_auc = auc(fpr, tpr)
-    print(f"SL Test AUC: {roc_auc:.4f}")
- 
+    fpr, tpr = None, None
+    roc_auc = 0.0
+    auc_std = 0.0
+
+    try:
+        if num_classes == 2:
+        
+            probs_binary = all_probs_tensor[:, 1].numpy()
+            labels_binary = all_labels_tensor.numpy()
+            
+            if len(np.unique(labels_binary)) > 1:
+                roc_auc = roc_auc_score(labels_binary, probs_binary)
+                fpr, tpr, _ = roc_curve(labels_binary, probs_binary)
+            else:
+                roc_auc = 0.5 
+        else:
+            roc_auc_per_class = roc_auc_score(
+                all_labels_tensor.numpy(),
+                all_probs_tensor.numpy(),
+                multi_class='ovr',
+                average=None 
+            )
+            roc_auc = np.mean(roc_auc_per_class)
+            auc_std = np.std(roc_auc_per_class)
+
+    except ValueError:
+        roc_auc = -1.0 
 
     if confusion_matrix_config:
-        all_labels_cm = torch.tensor(all_labels_cm)
-        all_predicted_cm = torch.tensor(all_predicted_cm)
-
-        # Get the number of classes from the config (2 for BreastMNIST)
-        num_classes = confusion_matrix_config.get('num_classes_downstream', config.get('num_classes', 2))
+        all_labels_cm_tensor = torch.tensor(all_labels_cm)
+        all_predicted_cm_tensor = torch.tensor(all_predicted_cm)
         
-        conf_matrix = multiclass_confusion_matrix(all_labels_cm, all_predicted_cm, num_classes=num_classes)
+        conf_matrix = multiclass_confusion_matrix(all_labels_cm_tensor, all_predicted_cm_tensor, num_classes=num_classes)
         
         if confusion_matrix_config.get('print_confusion_matrix', False):
-            print(f"Confusion Matrix (SL):\n{conf_matrix.tolist()}")
+            print(f"Confusion Matrix:\n{conf_matrix.tolist()}")
 
         if confusion_matrix_config.get('confusion_matrix_folder'):
             folder = confusion_matrix_config['confusion_matrix_folder']
             os.makedirs(folder, exist_ok=True)
-            
             file_name = f"CM_{config['dataset']}_{config['experiment_name']}_{config['seed']}.txt"
             confusion_matrix_path = os.path.join(folder, file_name)
-            
             with open(confusion_matrix_path, 'a') as f:
-                f.write(f"Generation: {config.get('generation', 'Final')}\n{conf_matrix.tolist()}\n\n")
+                gen = config.get('generation', 'Final')
+                f.write(f"Generation: {gen}\n{conf_matrix.tolist()}\n\n")
 
-    return sl_acc, roc_auc, fpr, tpr
+    return acc, roc_auc, auc_std, fpr, tpr
+
+
 
 def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
     
@@ -239,23 +261,32 @@ def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
     return sl_acc, roc_auc, auc_std, fpr, tpr
 
 
-def evaluate_sl(trainloader, testloader, config):
+def evaluate_sl(trainloader, valloader, testloader, config):
 
     num_classes = config.get('num_classes_downstream', config.get('num_classes', 2))
     model = config['model'](num_classes_downstream=num_classes)
 
-
     sl_hist_loss, sl_hist_acc = train_sl(model, trainloader, config)
-    #Validação
 
-    sl_acc, sl_auc, auc_std, fpr, tpr = test_sl_multi(model, testloader, config['device'], config['confusion_matrix_config'], config)
+    val_acc, val_auc, val_auc_std, fpr_val, tpr_val = run_inference(model, valloader, config['device'], config['confusion_matrix_config'], config)
+
+    test_acc, test_auc, test_auc_std, fpr_test, tpr_test = run_inference(model, testloader, config['device'], config['confusion_matrix_config'], config)
+
+
+    print(f"  -> Val Acc: {val_acc:.4f} | Test Acc: {test_acc:.4f} | Test AUC: {test_auc:.4f}")
+
+    history = {
+        "sl_hist_loss": sl_hist_loss,
+        "sl_hist_acc": sl_hist_acc,
+        "val_acc": val_acc,
+        "val_auc": val_auc,
+        "test_acc": test_acc,
+        "test_auc": test_auc,
+        "test_auc_std": test_auc_std,
+        "fpr": fpr_test,
+        "tpr": tpr_test
+    }
 
     # The EA expects 3 returns. pretext_acc is now unused (-1).
     # Return: final SL accuracy, a placeholder pretext accuracy (-1), and the history dict.
-    return sl_acc, -1, {"sl_loss": sl_hist_loss, 
-                        "sl_acc": sl_hist_acc, 
-                        "sl_auc": sl_auc,
-                        "auc_std": auc_std,
-                        "fpr": fpr,
-                        "tpr": tpr
-                        }
+    return val_acc, -1, history
