@@ -11,7 +11,7 @@ import DA.data_augmentation_albumentations as data_augmentation_albumentations
 import configs.config_base as config
 
 
-DATA_FLAG = 'dermamnist' # CHANGE HERE WHENEVER USING A DIFFERENT MEDMNIST DATASET
+DATA_FLAG = 'breastmnist' # CHANGE HERE WHENEVER USING A DIFFERENT MEDMNIST DATASET
 INFO = INFO[DATA_FLAG]
 DataClass = getattr(medmnist_dataset, INFO['python_class'])
 
@@ -148,7 +148,7 @@ def load_dataset_simple(individual, config):
 
     transforms_before_augs, transforms_after_augs = config['dataset_transforms']()
     
-    transform_test = A.Compose(transforms_before_augs + transforms_after_augs)
+    transform_eval = A.Compose(transforms_before_augs + transforms_after_augs)
 
   
     if config.get('fix_pretext_da') is not None:
@@ -196,34 +196,37 @@ def load_dataset_simple(individual, config):
     print(f"Loading dataset {DATA_FLAG} from {config['cache_folder']}/ (SL Mode)")
     download_needed = not os.path.exists(os.path.join(config['cache_folder'], DATA_FLAG + '.npz'))
     
-    trainset =  MEDMNISTAlbumentations(root=config['cache_folder'], split='train', 
-        download=download_needed, transform=transform_train)
+    trainset = MEDMNISTAlbumentations(root=config['cache_folder'], split='train', 
+                                      download=download_needed, transform=transform_train)
+    
+    valset = MEDMNISTAlbumentations(root=config['cache_folder'], split='val', 
+                                    download=False, transform=transform_eval)
     
     testset = MEDMNISTAlbumentations(root=config['cache_folder'], split='test', 
-        download=False, transform=transform_test)
+                                     download=False, transform=transform_eval)
     
     print(f"Dataset {DATA_FLAG} loaded successfully.")
     
-    return trainset, testset
+    return trainset, valset, testset
 
+def create_data_loaders_simple(trainset, valset, testset, config):
 
-def create_data_loaders_simple(trainset, testset, config):
-   
-    batch_size = config.get('batch_size', 128) 
+    print("Creating DataLoaders (Train, Val, Test)...")
+    batch_size = config.get('batch_size', 128)
 
     trainloader = torch.utils.data.DataLoader(
-        trainset, 
-        batch_size=batch_size, 
-        shuffle=config['shuffle_dataset'], 
-        num_workers=config['num_workers'], 
-        pin_memory=True
+        trainset, batch_size=batch_size, shuffle=True, 
+        num_workers=config['num_workers'], pin_memory=True
     )
+    
+    valloader = torch.utils.data.DataLoader(
+        valset, batch_size=batch_size, shuffle=False, 
+        num_workers=config['num_workers'], pin_memory=True
+    )
+    
     testloader = torch.utils.data.DataLoader(
-        testset, 
-        batch_size=batch_size, 
-        shuffle=False, 
-        num_workers=config['num_workers'], 
-        pin_memory=True
+        testset, batch_size=batch_size, shuffle=False, 
+        num_workers=config['num_workers'], pin_memory=True
     )
 
-    return trainloader, testloader
+    return trainloader, valloader, testloader

@@ -14,7 +14,7 @@ def analyze_single_file(file_path, output_filename, dataset_name, network_name):
         return
 
     # Ensure fitness columns are numeric
-    numeric_cols = ['generation', 'avg_fitness', 'std_fitness', 'best_fitness']
+    numeric_cols = ['generation', 'avg_fitness_val', 'std_fitness_val', 'best_fitness']
     for col in numeric_cols:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce')
@@ -32,8 +32,8 @@ def analyze_single_file(file_path, output_filename, dataset_name, network_name):
     fig.suptitle(title, fontsize=16)
 
     generation = df['generation']
-    avg_fitness = df['avg_fitness']
-    std_fitness = df['std_fitness']
+    avg_fitness = df['avg_fitness_val']
+    std_fitness = df['std_fitness_val']
     
     upper_band = avg_fitness + std_fitness
     lower_band = avg_fitness - std_fitness
@@ -105,16 +105,7 @@ if __name__ == "__main__":
     NETWORK_NAME = "ResNet50"
     
     files_to_compare = {
-        '1': 'breastmnist_DA_optimize_do_breastmnist_DA_resnet50_1.csv',
-        '2': 'breastmnist_DA_optimize_do_breastmnist_DA_resnet50_2.csv',
-        '3': 'breastmnist_DA_optimize_do_breastmnist_DA_resnet50_3.csv',
-        '4': 'breastmnist_DA_optimize_do_breastmnist_DA_resnet50_4.csv',
-        '5': 'breastmnist_DA_optimize_do_breastmnist_DA_resnet50_5.csv',
-        '6': 'breastmnist_DA_optimize_do_breastmnist_DA_resnet50_6.csv',
-        '7': 'breastmnist_DA_optimize_do_breastmnist_DA_resnet50_7.csv',
-        '8': 'breastmnist_DA_optimize_do_breastmnist_DA_resnet50_8.csv',
-        '9': 'breastmnist_DA_optimize_do_breastmnist_DA_resnet50_9.csv',
-        '10': 'breastmnist_DA_optimize_do_breastmnist_DA_resnet50_10.csv'
+        '1': 'breastmnist_VAL_optimize_do_breastmnist_resnet18_1_20epochs.csv'
     }
 
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -124,7 +115,7 @@ if __name__ == "__main__":
     os.makedirs(output_plot_dir, exist_ok=True)
 
  
-    csv_input_dir = os.path.join(parent_dir, 'output_csv_optimize_do_breastmnist_DA_resnet50')
+    csv_input_dir = os.path.join(parent_dir, 'VAL_output_csv_VAL_optimize_do_breastmnist_resnet18')
 
     print(f"Looking for CSV files in: {csv_input_dir}")
     existing_files_map = {}

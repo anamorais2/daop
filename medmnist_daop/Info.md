@@ -149,3 +149,9 @@ Isto manteve o foco da pesquisa na otimização dos *data augmentations*.
  - Primeiro de tudo alterar no ficheiro config_base qual é o modelo que queremos resnet18 ou resnet50
  - Modificar a função para guardar a curva ROC do melhor individuo, neste momento está a calcular todas as vezes e reescreve
  - Ver o que se passa porque ele tem andando a guardar os estados, e sinto que por mais que eu apague eles voltam. Por causa da gestão de se uma geração parar a meio, depois pode voltar a correr. 
+
+
+O ROB é a média das curvas de progresso cumulativo. Mostra a expectativa média de sucesso do seu algoritmo ao longo do tempo. Faz a média do "melhor até agora" a cada geração.
+O OMF representa o potencial máximo do seu método. Se correu 10 vezes, qual foi o melhor resultado único que conseguiu extrair de todo esse esforço computacional.
+
+Na matriz de confusão do Val o numero de gerações é a dobrar, uma vez que para cada individuo, ele treina, valida e testa, então uma matriz é da validação e outra do teste!

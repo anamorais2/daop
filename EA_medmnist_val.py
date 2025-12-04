@@ -6,16 +6,23 @@ import numpy as np
 import random
 import gc
 from pympler.tracker import SummaryTracker
-import sl_evaluation_medmnist as sl_evaluation_medmnist
+import sl_evaluation_medmnist_val as sl_evaluation_medmnist
 import pandas as pd
 import os
 import numpy as np
 
-def write_gen_stats(config, gen, population, best_individual, best_auc, best_auc_std):
+def write_gen_stats(config, gen, population, best_individual):
     avg_fitness = np.mean([individual[1] for individual in population])
     std_fitness = np.std([individual[1] for individual in population])
-    best_fitness = best_individual[1]
+    best_fitness_val = best_individual[1]
     best_individual_genotype = best_individual[0] 
+
+    history = best_individual[4]
+    auc_val = history.get('val_auc', -1)
+    test_acc = history.get('test_acc', -1)
+    test_auc = history.get('test_auc', -1)
+    test_auc_std = history.get('test_auc_std', 0.0)
+
     total_time = sum([individual[3] for individual in population if individual[3] is not None])
 
     if not os.path.exists(config['output_csv_folder']):
@@ -42,18 +49,18 @@ def write_gen_stats(config, gen, population, best_individual, best_auc, best_auc
     try:
         with open(file_path, 'a') as stats_file:
             if gen == 1:
-                stats_file.write('generation;avg_fitness;std_fitness;best_fitness;best_auc;best_auc_std;total_time;best_individual;population\n')
+                stats_file.write('generation;avg_fitness_val;std_fitness_val;best_fitness;auc_val;acc_test;auc_test;auc_std_test;total_time;best_individual;population\n')
             
-            stats_file.write(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{best_auc_std};{total_time};{best_individual_genotype};{population_to_save}\n')
+            stats_file.write(f'{gen};{avg_fitness};{std_fitness};{best_fitness_val};{auc_val};{test_acc};{test_auc};{test_auc_std};{total_time};{best_individual_genotype};{population_to_save}\n')
     except Exception as e:
         print(f"Error writing stats to file {file_path}: {e}")
         try:
             with open(file_path_backup, 'a') as stats_file:
-                stats_file.write('generation;avg_fitness;std_fitness;best_fitness;best_auc;best_auc_std;total_time;best_individual;population\n')
-                stats_file.write(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{best_auc_std};{total_time};{best_individual_genotype};{population_to_save}\n')
+                stats_file.write('generation;avg_fitness_val;std_fitness_val;best_fitness;auc_val;acc_test;auc_test;auc_std_test;total_time;best_individual;population\n')
+                stats_file.write(f'{gen};{avg_fitness};{std_fitness};{best_fitness_val};{auc_val};{test_acc};{test_auc};{test_auc_std};{total_time};{best_individual_genotype};{population_to_save}\n')
         except Exception as e:
             print(f"Error writing stats to backup file {file_path_backup}: {e}")
-            print(f'{gen};{avg_fitness};{std_fitness};{best_fitness};{best_auc};{total_time};{best_individual_genotype};{population_to_save}')
+            print(f'{gen};{avg_fitness};{std_fitness};{best_fitness_val};{auc_val};{test_acc};{test_auc};{test_auc_std};{total_time};{best_individual_genotype};{population_to_save}')
 
 
 def create_individual(config):
@@ -201,11 +208,9 @@ def ea(config):
         # best individual
         best_gen_individual = copy.deepcopy(max(population, key=lambda x: x[1]))
         
-    
-        best_auc_value = best_gen_individual[4].get('sl_auc', -1)
-        best_auc_std = best_gen_individual[4].get('auc_std', 0.0)
+
         
-        write_gen_stats(config, gen, population, best_gen_individual, best_auc_value, best_auc_std)
+        write_gen_stats(config, gen, population, best_gen_individual)
 
         if config['save_state']:
             config['save_state'](config)
@@ -267,7 +272,6 @@ def ea(config):
 
      
         extended_best_individual = max(population, key=lambda x: x[1])
-        extended_best_auc = extended_best_individual[4].get('sl_auc', -1)
-        extended_best_auc_std = extended_best_individual[4].get('auc_std', 0.0)
+       
         
-        write_gen_stats(config, gen+1, population=population, best_individual=extended_best_individual, best_auc=extended_best_auc, best_auc_std=extended_best_auc_std)
+        write_gen_stats(config, gen+1, population=population, best_individual=extended_best_individual)

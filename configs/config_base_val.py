@@ -7,8 +7,8 @@ import mutations
 import chromosomes
 import train_with_DA
 import evolution_mod_functions
-import dataset.data_processing_medmnist as data_processing_medmnist
-import sl_evaluation_medmnist as sl_evaluation_medmnist
+import dataset.data_processing_medmnist_val as data_processing_medmnist
+import sl_evaluation_medmnist_val as sl_evaluation_medmnist
 
 ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 # FIX_PRETEXT_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [1.0, 0.5, 0.5, 0.5, 0.5]]]
@@ -16,9 +16,9 @@ ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 
 # START_PARENT = [[43, [0.33, 0.56, 0.35, 0.32]]]
 
-DATA_FLAG = 'dermamnist' # DermaMNIST
-RESNET_FLAG = 'resnet50'
-NUM_CLASSES_MEDMNIST = 7 
+DATA_FLAG = 'breastmnist' # PneumoniaMNIST
+RESNET_FLAG = 'resnet18'
+NUM_CLASSES_MEDMNIST = 2 
 
 config = {}
 
@@ -30,12 +30,12 @@ else:
 
 
 # experiment configs
-config['base_experiment_name'] = f"optimize_do_{DATA_FLAG}_{RESNET_FLAG}"
+config['base_experiment_name'] = f"VAL_optimize_do_{DATA_FLAG}_{RESNET_FLAG}"
 config['experiment_name'] = config['base_experiment_name']
-config['output_csv_folder'] = "output_csv" + "_" + config['base_experiment_name']
+config['output_csv_folder'] = "VAL_output_csv" + "_" + config['base_experiment_name']
 config['seeds'] = range(5)
 config['seed'] = config['seeds'][0]
-config['state_folder'] = "states"
+config['state_folder'] = "VAL_states"
 config['state_file'] = None
 config['load_state'] = state_manager_torch.load_state
 config['save_state'] = state_manager_torch.save_state
@@ -78,9 +78,9 @@ config['extended_pretrained_pretext_model'] = None
 # model training configs
 config['framework'] = 'torch'
 config['finetune_backbone'] = False
-config['base_epochs'] = 20
+config['base_epochs'] = 100
 config['epochs'] = config['base_epochs']
-config['extended_epochs'] = 100
+config['extended_epochs'] = None
 config['base_pretext_epochs'] = lambda: config['epochs']
 config['base_downstream_epochs'] = lambda: config['epochs']
 config['pretext_epochs'] = config['base_pretext_epochs']
