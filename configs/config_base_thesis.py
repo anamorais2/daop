@@ -7,8 +7,8 @@ import mutations
 import chromosomes
 import train_with_DA
 import evolution_mod_functions
-import dataset.data_processing_medmnist_copy as data_processing_medmnist
-import sl_evaluation_medmnist as sl_evaluation_medmnist
+import dataset.data_processing_thesis as data_processing_thesis
+import sl_evaluation_medmnist_val as sl_evaluation
 
 ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 # FIX_PRETEXT_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [1.0, 0.5, 0.5, 0.5, 0.5]]]
@@ -16,9 +16,13 @@ ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 
 # START_PARENT = [[43, [0.33, 0.56, 0.35, 0.32]]]
 
-DATA_FLAG = 'pneumoniamnist' # PneumoniaMNIST
+DATA_ROOT_PATH = "C:\\Users\\User\\Desktop\\MEB\\2ano\\Tese\\image-dataset"
+FOLD_NAME = "Fold1"
+
+DATA_FLAG = 'echography' # PneumoniaMNIST
 RESNET_FLAG = 'resnet18'
-NUM_CLASSES_MEDMNIST = 2 
+NUM_CLASSES = 2 
+IMG_DIM = (224, 224, 3)
 
 config = {}
 
@@ -30,12 +34,14 @@ else:
 
 
 # experiment configs
-config['base_experiment_name'] = f"optimize_do_{DATA_FLAG}_{RESNET_FLAG}"
+
+
+config['base_experiment_name'] = f"VAL_optimize_do_{DATA_FLAG}__{FOLD_NAME}_{RESNET_FLAG}"
 config['experiment_name'] = config['base_experiment_name']
-config['output_csv_folder'] = "output_csv" + "_" + config['base_experiment_name']
+config['output_csv_folder'] = "VAL_output_csv" + "_" + config['base_experiment_name']
 config['seeds'] = range(5)
 config['seed'] = config['seeds'][0]
-config['state_folder'] = "states"
+config['state_folder'] = "VAL_states"
 config['state_file'] = None
 config['load_state'] = state_manager_torch.load_state
 config['save_state'] = state_manager_torch.save_state
@@ -43,17 +49,17 @@ config['every_gen_state_reset'] = None
 
 # dataset configs
 config['dataset'] = DATA_FLAG
-config['dim'] = (28, 28, 1)
-config['num_classes'] = NUM_CLASSES_MEDMNIST
+config['dim'] = IMG_DIM
+config['num_classes'] = NUM_CLASSES
 config['num_classes_downstream'] = config['num_classes']
 config['num_classes_pretext'] = 4
 config['cache_folder'] = f"cache_{DATA_FLAG}_torch"
 config['delete_cache'] = False
 
 # data loading functions
-config['load_dataset_func'] = data_processing_medmnist.load_dataset_simple
-config['data_loader_func'] = data_processing_medmnist.create_data_loaders_simple
-config['dataset_transforms'] = data_processing_medmnist.dataset_transforms
+config['load_dataset_func'] = data_processing_thesis.load_dataset
+config['data_loader_func'] = data_processing_thesis.create_data_loaders
+config['dataset_transforms'] = data_processing_thesis.dataset_transforms
 
 
 # augmentation configs
@@ -78,20 +84,20 @@ config['extended_pretrained_pretext_model'] = None
 # model training configs
 config['framework'] = 'torch'
 config['finetune_backbone'] = False
-config['base_epochs'] = 20
+config['base_epochs'] = 100
 config['epochs'] = config['base_epochs']
-config['extended_epochs'] = 100
+config['extended_epochs'] = None
 config['base_pretext_epochs'] = lambda: config['epochs']
 config['base_downstream_epochs'] = lambda: config['epochs']
 config['pretext_epochs'] = config['base_pretext_epochs']
 config['downstream_epochs'] = config['base_downstream_epochs']
 config['extended_pretext_epochs'] = lambda: config['extended_epochs']
 config['extended_downstream_epochs'] = lambda: config['extended_epochs']
-config['batch_size'] = 128
+config['batch_size'] = 32
 config['pretext_batch_size'] = lambda: config['batch_size'] * 4
 config['downstream_batch_size'] = lambda: config['batch_size']
 config['num_workers'] = 4
-config['model_evaluate_func'] = sl_evaluation_medmnist.evaluate_sl
+config['model_evaluate_func'] = sl_evaluation.evaluate_sl
 config['check_memory_leaks'] = False
 config['track_train_bottleneck'] = False
 config['save_models_folder'] = None

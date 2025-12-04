@@ -3,8 +3,8 @@ import sys
 import pandas as pd
 import ast
 import analysis.plot_roc as plot_roc
-import configs.config_base_copy as config_base
-import EA_medmnist as EA
+import configs.config_base_thesis as config_base
+import EA_medmnist_val as EA
 
 
 def completed_run(config):
@@ -77,10 +77,10 @@ def generate_final_roc_plot(config):
     df = pd.read_csv(file_path, sep=';')
     
     # Select the row with the highest recorded best_auc
-    best_row = df.loc[df['best_auc'].idxmax()]
+    best_row = df.loc[df['auc_test'].idxmax()]
     
     best_genotype_str = best_row['best_individual']
-    best_auc = best_row['best_auc']
+    best_auc = best_row['auc_test']
 
     try:
         best_genotype = ast.literal_eval(best_genotype_str)
@@ -137,6 +137,7 @@ if __name__ == "__main__":
     for seed in config['seeds']:
         config['seed'] = seed
         reset_config(config)
+
 
         if completed_run(config) or seed in skip_runs or (skip_until_run is not None and seed != skip_until_run):
             print(f"Skipping seed {seed}")
