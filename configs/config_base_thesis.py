@@ -16,8 +16,8 @@ ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 
 # START_PARENT = [[43, [0.33, 0.56, 0.35, 0.32]]]
 
-DATA_ROOT_PATH = "C:\\Users\\User\\Desktop\\MEB\\2ano\\Tese\\image-dataset"
-FOLD_NAME = "Fold1"
+DATA_ROOT_PATH = "C:\\Users\\User\\Desktop\\MEB\\2ano\\Tese\\image-dataset\\dataset_images_cv_1"
+FOLD_NAME = "Head_"
 
 DATA_FLAG = 'echography' # PneumoniaMNIST
 RESNET_FLAG = 'resnet18'
@@ -53,8 +53,10 @@ config['dim'] = IMG_DIM
 config['num_classes'] = NUM_CLASSES
 config['num_classes_downstream'] = config['num_classes']
 config['num_classes_pretext'] = 4
-config['cache_folder'] = f"cache_{DATA_FLAG}_torch"
+config['cache_folder'] = f"cache_{DATA_FLAG}_{FOLD_NAME}"
 config['delete_cache'] = False
+config['data_root_path'] = DATA_ROOT_PATH
+config['fold_name'] = FOLD_NAME
 
 # data loading functions
 config['load_dataset_func'] = data_processing_thesis.load_dataset
