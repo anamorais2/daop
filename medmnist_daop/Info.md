@@ -155,3 +155,9 @@ O ROB é a média das curvas de progresso cumulativo. Mostra a expectativa médi
 O OMF representa o potencial máximo do seu método. Se correu 10 vezes, qual foi o melhor resultado único que conseguiu extrair de todo esse esforço computacional.
 
 Na matriz de confusão do Val o numero de gerações é a dobrar, uma vez que para cada individuo, ele treina, valida e testa, então uma matriz é da validação e outra do teste!
+
+Não esquecer que para o papper da conferência tenho de usar o matplolib com valores de referência - 
+
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
