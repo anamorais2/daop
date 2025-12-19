@@ -31,7 +31,11 @@ def dataset_transforms():
     mean = [0.485, 0.456, 0.406]
     std = [0.229, 0.224, 0.225]
   
-    return [], [A.Normalize(mean=mean, std=std), ToTensorV2()]
+    return [], [
+        A.Resize(height=224, width=224), 
+        A.Normalize(mean=mean, std=std), 
+        ToTensorV2()
+    ]
 
 def load_dataset(individual, config):
     
@@ -42,11 +46,11 @@ def load_dataset(individual, config):
         
     
     
-    data_root = config.get('data_root_path', './data') 
-    current_fold = config.get('fold_name', 'Fold1')     
+    data_root = config.get('data_root_path') 
+    current_fold = config.get('fold_name')     
     
     train_dir = os.path.join(data_root, current_fold, 'train')
-    val_dir = os.path.join(data_root, current_fold, 'val')
+    val_dir = os.path.join(data_root, current_fold, 'validation')
     test_dir = os.path.join(data_root, current_fold, 'test')
     
 
