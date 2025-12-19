@@ -11,7 +11,7 @@ import DA.data_augmentation_albumentations as data_augmentation_albumentations
 import configs.config_base as config
 
 
-DATA_FLAG = 'breastmnist' # CHANGE HERE WHENEVER USING A DIFFERENT MEDMNIST DATASET
+DATA_FLAG = 'organcmnist' # CHANGE HERE WHENEVER USING A DIFFERENT MEDMNIST DATASET
 INFO = INFO[DATA_FLAG]
 DataClass = getattr(medmnist_dataset, INFO['python_class'])
 
