@@ -16,9 +16,9 @@ ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 
 # START_PARENT = [[43, [0.33, 0.56, 0.35, 0.32]]]
 
-DATA_FLAG = 'breastmnist' # PneumoniaMNIST
+DATA_FLAG = 'organcmnist' # PneumoniaMNIST
 RESNET_FLAG = 'resnet18'
-NUM_CLASSES_MEDMNIST = 2 
+NUM_CLASSES_MEDMNIST = 11 
 
 config = {}
 
@@ -80,7 +80,7 @@ config['framework'] = 'torch'
 config['finetune_backbone'] = False
 config['base_epochs'] = 100
 config['epochs'] = config['base_epochs']
-config['extended_epochs'] = None
+config['extended_epochs'] = 0
 config['base_pretext_epochs'] = lambda: config['epochs']
 config['base_downstream_epochs'] = lambda: config['epochs']
 config['pretext_epochs'] = config['base_pretext_epochs']
@@ -123,7 +123,7 @@ config['extended_isolated_run'] = False
 config['current_run_generations'] = 0
 config['max_generations_per_run'] = None
 config['start_gen'] = 1
-config['stop_gen'] = 220
+config['stop_gen'] = 200
 config['population_size'] = 5
 config['max_chromosomes'] = 5
 config['recalculate_best'] = True
