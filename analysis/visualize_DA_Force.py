@@ -4,33 +4,32 @@ import numpy as np
 import medmnist
 from medmnist import INFO
 import albumentations as A
+from albumentations.pytorch import ToTensorV2
 import cv2
 
 # ==========================================
-# 1. DADOS DO MELHOR INDIVÍDUO (Fornecidos por ti)
+# 1. O TEU MELHOR INDIVÍDUO (Genótipo)
 # ==========================================
-# ID 38: Illumination (Gaussian)
-# ID 0: Pad & Random Crop
-# ID 8: Channel Shuffle
+# ID 38: Illumination (Gaussian) | Orig Prob: 0.12 -> Vamos forçar a 1.0
+# ID 0: Pad & Random Crop        | Orig Prob: 0.17 -> Vamos forçar a 1.0
+# ID 8: Channel Shuffle          | Orig Prob: 0.49 -> Vamos forçar a 1.0
+
 BEST_INDIVIDUAL = [
     [38, [0.12, 0.29, 1.0, 1.0, 0.61]], 
     [0,  [0.17, 0.66, 0.04, 0.46, 0.43]], 
     [8,  [0.49, 0.93, 0.59, 0.8, 0.13]]
 ]
 
-# ==========================================
-# 2. LÓGICA DE MAPEAMENTO (Do teu código)
-# ==========================================
-# Constantes necessárias para as lambdas funcionarem
 interpolation = [cv2.INTER_NEAREST, cv2.INTER_LINEAR, cv2.INTER_CUBIC, cv2.INTER_AREA, cv2.INTER_LANCZOS4]
 border_type = [cv2.BORDER_CONSTANT, cv2.BORDER_REPLICATE, cv2.BORDER_REFLECT, cv2.BORDER_WRAP, cv2.BORDER_REFLECT_101]
 grayscale_methods = ['weighted_average', 'from_lab', 'desaturation', 'average', 'max', 'pca']
 illumination_effects = ['brighten', 'darken', 'both']
 
-def get_da_functions(img_size=(224, 224), min_prob=0, max_prob=1):
-    img_height, img_width = img_size
+def get_da_functions(img_size, min_prob=0, max_prob=1):
+    img_height = img_size[0]
+    img_width = img_size[1]
     
-    # A LISTA EXATA QUE FORNECESTE
+
     da_funcs = [
         lambda p0,p1,p2,p3,p4: A.Compose([A.Pad((int(p1*20), int(p2*20), int(p3*20), int(p4*20)), p=1.0), A.RandomCrop(height=img_height, width=img_width, p=1.0)], p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.HorizontalFlip(p=p0*(max_prob-min_prob)+min_prob),
@@ -40,7 +39,7 @@ def get_da_functions(img_size=(224, 224), min_prob=0, max_prob=1):
         lambda p0,p1,p2,p3,p4: A.Affine(shear=sorted((p1*360-180, p2*360-180)), interpolation=interpolation[int(p3*len(interpolation)*0.99)], border_mode=border_type[int(p4*len(border_type)*0.99)], p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.Perspective(scale=sorted((p1*2,p2*2)), interpolation=interpolation[int(p3*len(interpolation)*0.99)], p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.ElasticTransform(alpha=p1*1000+1, sigma=p2*100+1, interpolation=interpolation[int(p3*len(interpolation)*0.99)], p=p0*(max_prob-min_prob)+min_prob),
-        lambda p0,p1,p2,p3,p4: A.ChannelShuffle(p=p0*(max_prob-min_prob)+min_prob), # ID 8
+        lambda p0,p1,p2,p3,p4: A.ChannelShuffle(p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.ToGray(num_output_channels=3, method=grayscale_methods[int(p1*len(grayscale_methods)*0.99)], p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.GaussianBlur(blur_limit=sorted((int(p1*20), int(p2*20))), sigma_limit=sorted((p3*10+0.1, p4*10+0.1)), p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.GaussNoise(mean_range=sorted((p1*2-1, p2*2-1)), std_range=sorted((p3, p4)), p=p0*(max_prob-min_prob)+min_prob),
@@ -61,7 +60,7 @@ def get_da_functions(img_size=(224, 224), min_prob=0, max_prob=1):
         lambda p0,p1,p2,p3,p4: A.Blur(blur_limit=sorted((int(p1*100)+3, int(p2*100)+3)), p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.HueSaturationValue(hue_shift_limit=sorted((p1*200-100, p2*200-100)), sat_shift_limit=sorted((p3*200-100, p4*200-100)), p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.ColorJitter(brightness=p1, contrast=p2, saturation=p3, hue=p4*0.5, p=p0*(max_prob-min_prob)+min_prob),
-        lambda p0,p1,p2,p3,p4: A.RandomResizedCrop((32, 32), scale=sorted((p1*0.99+0.01, p2*0.99+0.01)), ratio=sorted((p3+0.5, p4+0.5)), p=p0*(max_prob-min_prob)+min_prob),
+        lambda p0,p1,p2,p3,p4: A.RandomResizedCrop((img_height, img_width), scale=sorted((p1*0.99+0.01, p2*0.99+0.01)), ratio=sorted((p3+0.5, p4+0.5)), p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.AutoContrast(cutoff=p1*100, method='cdf' if p2 < 0.5 else 'pil', p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.Erasing(scale=sorted((p1*0.3+0.01, p2*0.3+0.01)), ratio=sorted((p3*3+0.1, p4*3+0.1)), p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.RGBShift(r_shift_limit=p1*200, g_shift_limit=p2*200, b_shift_limit=p3*200, p=p0*(max_prob-min_prob)+min_prob),
@@ -79,33 +78,33 @@ def get_da_functions(img_size=(224, 224), min_prob=0, max_prob=1):
     ]
     return da_funcs
 
-# ==========================================
-# 3. CONSTRUÇÃO DO PIPELINE
-# ==========================================
-# MedMNIST geralmente usa 224x224 em ResNets
-available_funcs = get_da_functions(img_size=(224, 224))
 
-# Pipeline Base (Sempre começa com Resize)
-pipeline_steps = [A.Resize(224, 224)]
+IMG_HEIGHT, IMG_WIDTH = 224, 224
+available_funcs = get_da_functions(img_size=(IMG_HEIGHT, IMG_WIDTH))
+
+pipeline_steps = [A.Resize(IMG_HEIGHT, IMG_WIDTH)]
+
+print("A construir pipeline visual forçado (p=1.0)...")
 
 for gene in BEST_INDIVIDUAL:
-    func_idx = gene[0]  # Ex: 38, 0, 8
-    params = gene[1]    # Ex: [0.12, 0.29, ...]
+    func_idx = gene[0]  
+    params = gene[1]    
     
-    # Criar a transformação usando a lambda da lista
+    # === HACK PARA VISUALIZAÇÃO ===
+    # Forçamos o primeiro parâmetro (probabilidade) a 1.0
+    forced_params = [1.0] + params[1:] 
+    
     try:
         if func_idx < len(available_funcs):
-            transform = available_funcs[func_idx](*params)
+            transform = available_funcs[func_idx](*forced_params)
             pipeline_steps.append(transform)
+            print(f" -> Adicionada Transf ID {func_idx} (Params originais: {params[0]:.2f} -> Forçado: 1.0)")
     except Exception as e:
-        print(f"Erro ao criar transformação ID {func_idx}: {e}")
+        print(f"Erro ID {func_idx}: {e}")
 
-# Pipeline Final
 evolved_pipeline = A.Compose(pipeline_steps)
 
-# ==========================================
-# 4. CARREGAMENTO E VISUALIZAÇÃO
-# ==========================================
+
 DATA_FLAG = 'breastmnist'
 info = INFO[DATA_FLAG]
 DataClass = getattr(medmnist, info['python_class'])
@@ -117,7 +116,8 @@ classes_name = {0: 'Malignant', 1: 'Benign'}
 
 for i in range(len(dataset)):
     img, label = dataset[i]
-    lbl = int(label)
+    lbl = label.item() #
+    
     if target_images[lbl] is None:
         target_images[lbl] = np.array(img)
     if target_images[0] is not None and target_images[1] is not None:
@@ -125,11 +125,10 @@ for i in range(len(dataset)):
 
 # PLOT FINAL
 fig, axs = plt.subplots(2, 2, figsize=(8, 8))
-fig.suptitle(f"Phenotype Visualization: Best Individual (Seed 123)\nDataset: {DATA_FLAG}", fontsize=14)
+fig.suptitle(f"Phenotype Visualization: Best Individual (Seed 1)\nDataset: {DATA_FLAG}", fontsize=14)
 
 for row, (lbl, original_img) in enumerate(target_images.items()):
-    # MedMNIST é Grayscale (1 canal). 
-    # Importante: Converter para RGB porque 'ChannelShuffle' (ID 8) precisa de 3 canais.
+    # Converter para RGB (Importante para evitar erros de canais em ChannelShuffle)
     if len(original_img.shape) == 2:
         img_input = np.stack((original_img,)*3, axis=-1)
     else:
@@ -150,3 +149,4 @@ for row, (lbl, original_img) in enumerate(target_images.items()):
 
 plt.tight_layout()
 plt.show()
+
