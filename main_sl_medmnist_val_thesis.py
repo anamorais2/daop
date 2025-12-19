@@ -13,8 +13,8 @@ def completed_run(config):
   
     if not os.path.exists(file_path):
         return False
-
-
+    
+    
     df = pd.read_csv(file_path, sep=';')
     max_gen = df['generation'].iloc[-1]
     stop_gen = config['stop_gen'] + 1 if config['extended_isolated_run'] else config['stop_gen']
