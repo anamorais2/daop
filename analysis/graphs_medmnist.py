@@ -4,15 +4,11 @@ import glob
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Plot styling configuration
 FONT_SIZE = 14
 plt.rcParams.update({'font.size': FONT_SIZE})
 
 def plot_evolution_metric(folder_path, metric_col="test_acc", metric_label="Test Accuracy", experiment_name="Experiment", baseline=None):
-    """
-    Gera o gráfico de evolução para uma métrica específica (ex: test_acc, test_auc).
-    Versão corrigida para lidar com gerações duplicadas nos CSVs.
-    """
+  
     
     # 1. Encontrar ficheiros CSV
     all_files = glob.glob(os.path.join(folder_path, "*.csv"))
