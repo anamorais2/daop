@@ -1,0 +1,60 @@
+Generation: Final
+[[0, 0], [21, 57]]
+
+Generation: Final
+[[0, 3], [42, 111]]
+
+Generation: Final
+[[12, 3], [9, 54]]
+
+Generation: Final
+[[23, 5], [19, 109]]
+
+Generation: Final
+[[20, 17], [1, 40]]
+
+Generation: Final
+[[35, 51], [7, 63]]
+
+Generation: Final
+[[9, 2], [12, 55]]
+
+Generation: Final
+[[16, 5], [26, 109]]
+
+Generation: Final
+[[14, 0], [7, 57]]
+
+Generation: Final
+[[15, 5], [27, 109]]
+
+Generation: Final
+[[8, 0], [13, 57]]
+
+Generation: Final
+[[5, 1], [37, 113]]
+
+Generation: Final
+[[12, 2], [9, 55]]
+
+Generation: Final
+[[23, 11], [19, 103]]
+
+Generation: Final
+[[14, 4], [7, 53]]
+
+Generation: Final
+[[30, 17], [12, 97]]
+
+Generation: Final
+[[12, 0], [9, 57]]
+
+Generation: Final
+[[28, 7], [14, 107]]
+
+Generation: Final
+[[7, 0], [14, 57]]
+
+Generation: Final
+[[15, 2], [27, 112]]
+

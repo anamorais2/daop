@@ -8,10 +8,10 @@ from medmnist import INFO, Evaluator, dataset as medmnist_dataset
 
 import rotnet_torch
 import DA.data_augmentation_albumentations as data_augmentation_albumentations
-import configs.config_base as config
+import configs.config_base_val as config
 
 
-DATA_FLAG = 'organcmnist' # CHANGE HERE WHENEVER USING A DIFFERENT MEDMNIST DATASET
+DATA_FLAG = 'pneumoniamnist' # CHANGE HERE WHENEVER USING A DIFFERENT MEDMNIST DATASET
 INFO = INFO[DATA_FLAG]
 DataClass = getattr(medmnist_dataset, INFO['python_class'])
 

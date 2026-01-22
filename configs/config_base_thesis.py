@@ -17,7 +17,7 @@ ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 # START_PARENT = [[43, [0.33, 0.56, 0.35, 0.32]]]
 
 DATA_ROOT_PATH = "/home/arya/Documents/carolina/image-dataset/dataset_images_cv_1"
-FOLD_NAME = "Femur_"
+FOLD_NAME = "Head_"
 
 DATA_FLAG = 'echography' # PneumoniaMNIST
 RESNET_FLAG = 'resnet18'
