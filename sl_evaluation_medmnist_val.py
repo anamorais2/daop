@@ -57,9 +57,7 @@ def train_sl(model, trainloader, config):
     return hist_loss, hist_acc
 
 def run_inference(model, loader, device, confusion_matrix_config=None, config=None):
-    """
-    Executa inferência num loader e retorna métricas.
-    """
+    
     model.model.eval()
     correct = 0
     total = 0
