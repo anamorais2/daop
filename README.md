@@ -80,13 +80,6 @@ or with a number appended, which represents a specific seed:
 python main_sl_medmnist_val.py 1 
 ```
 
-### Example — BreastMNIST with default settings
-
-```bash
-python main_sl_medmnist_val.py --dataset breastmnist
-```
-
-
 ## Configuration
 
 The framework is highly configurable. Most experiment settings can be modified through command-line arguments or configuration files in `configs/`, including:
