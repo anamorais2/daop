@@ -8,11 +8,11 @@ from albumentations.pytorch import ToTensorV2
 import cv2
 
 # ==========================================
-# 1. O TEU MELHOR INDIVÍDUO (Genótipo)
+# 1. YOUR BEST INDIVIDUAL (Genotype)
 # ==========================================
-# ID 38: Illumination (Gaussian) | Orig Prob: 0.12 -> Vamos forçar a 1.0
-# ID 0: Pad & Random Crop        | Orig Prob: 0.17 -> Vamos forçar a 1.0
-# ID 8: Channel Shuffle          | Orig Prob: 0.49 -> Vamos forçar a 1.0
+# ID 38: Illumination (Gaussian) | Orig Prob: 0.12 -> Force to 1.0
+# ID 0: Pad & Random Crop        | Orig Prob: 0.17 -> Force to 1.0
+# ID 8: Channel Shuffle          | Orig Prob: 0.49 -> Force to 1.0
 
 BEST_INDIVIDUAL = [
     [38, [0.12, 0.29, 1.0, 1.0, 0.61]], 
@@ -84,23 +84,22 @@ available_funcs = get_da_functions(img_size=(IMG_HEIGHT, IMG_WIDTH))
 
 pipeline_steps = [A.Resize(IMG_HEIGHT, IMG_WIDTH)]
 
-print("A construir pipeline visual forçado (p=1.0)...")
+print("Building forced visual pipeline (p=1.0)...")
 
 for gene in BEST_INDIVIDUAL:
     func_idx = gene[0]  
     params = gene[1]    
     
-    # === HACK PARA VISUALIZAÇÃO ===
-    # Forçamos o primeiro parâmetro (probabilidade) a 1.0
+
     forced_params = [1.0] + params[1:] 
     
     try:
         if func_idx < len(available_funcs):
             transform = available_funcs[func_idx](*forced_params)
             pipeline_steps.append(transform)
-            print(f" -> Adicionada Transf ID {func_idx} (Params originais: {params[0]:.2f} -> Forçado: 1.0)")
+            print(f" -> Added Transform ID {func_idx} (Original Params: {params[0]:.2f} -> Forced: 1.0)")
     except Exception as e:
-        print(f"Erro ID {func_idx}: {e}")
+        print(f"Error ID {func_idx}: {e}")
 
 evolved_pipeline = A.Compose(pipeline_steps)
 
@@ -110,7 +109,6 @@ info = INFO[DATA_FLAG]
 DataClass = getattr(medmnist, info['python_class'])
 dataset = DataClass(split='train', download=True, size=224)
 
-# Procurar 1 imagem de cada classe (0: Malignant, 1: Benign)
 target_images = {0: None, 1: None}
 classes_name = {0: 'Malignant', 1: 'Benign'}
 
@@ -123,26 +121,21 @@ for i in range(len(dataset)):
     if target_images[0] is not None and target_images[1] is not None:
         break
 
-# PLOT FINAL
 fig, axs = plt.subplots(2, 2, figsize=(8, 8))
 fig.suptitle(f"Phenotype Visualization: Best Individual (Seed 1)\nDataset: {DATA_FLAG}", fontsize=14)
 
 for row, (lbl, original_img) in enumerate(target_images.items()):
-    # Converter para RGB (Importante para evitar erros de canais em ChannelShuffle)
     if len(original_img.shape) == 2:
         img_input = np.stack((original_img,)*3, axis=-1)
     else:
         img_input = original_img
 
-    # Aplicar Transformação
     transformed = evolved_pipeline(image=img_input)['image']
     
-    # Coluna 1: Original
     axs[row, 0].imshow(img_input, cmap='gray')
     axs[row, 0].set_title(f"Original ({classes_name[lbl]})")
     axs[row, 0].axis('off')
     
-    # Coluna 2: Transformada
     axs[row, 1].imshow(transformed, cmap='gray')
     axs[row, 1].set_title(f"Evolved Augmentation")
     axs[row, 1].axis('off')

@@ -14,17 +14,17 @@ import time
 import configs.config_base_val_transfer as config_base
 import net_models_torch
 import sl_evaluation_medmnist_val as sl_eval
-import dataset.data_processing_medmnist_val_transfer as data_loader
+import dataset.data_processing_medmnist_val as data_loader
 import DA.data_augmentation_albumentations as da_lib 
 
-CSV_FOLDER = "VAL_output_csv_VAL_optimize_do_dermamnist_resnet18"        
-DATASET_NAME = 'dermamnist' 
+CSV_FOLDER = "VAL_output_csv_VAL_optimize_do_pneumoniamnist_resnet50"        
+DATASET_NAME = 'pneumoniamnist' 
 RESOLUTION_HIGH = 224            
 BATCH_SIZE = 64
 EPOCHS = 100
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 TRANSFER_SEEDS = [1, 2, 3, 4, 5]       
-MODEL_TYPE = "resnet18"          
+MODEL_TYPE = "resnet50"          
 
 OUTPUT_FILENAME = f"Transfer_Results_{DATASET_NAME}_{MODEL_TYPE}_{RESOLUTION_HIGH}.csv"
 MATRIX_FOLDER = f"transfer_results_matrices_{DATASET_NAME}_{MODEL_TYPE}"
@@ -38,9 +38,7 @@ def high_res_transforms():
         A.Resize(RESOLUTION_HIGH, RESOLUTION_HIGH, interpolation=cv2.INTER_CUBIC)
     ]
     
-    # Resize FINAL:
-    # Se a política campeã fizer um Crop para 28px, isto força a voltar a 224px 
-    # para garantir que todas as imagens do batch têm o mesmo tamanho.
+    # if a crop was done before, resize back to high resolution
     after_augs = [
         A.Resize(RESOLUTION_HIGH, RESOLUTION_HIGH, interpolation=cv2.INTER_CUBIC), # <--- NOVO
         A.Normalize(mean=mean, std=std), 

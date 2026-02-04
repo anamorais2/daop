@@ -1,13 +1,11 @@
 import torch
 import DA.data_augmentation_albumentations as data_augmentation_albumentations
 import net_models_torch
-import rotnet_torch
 import state_manager_torch
 import mutations
 import chromosomes
 import train_with_DA
 import evolution_mod_functions
-import dataset.data_processing_medmnist_val as data_processing_medmnist
 import sl_evaluation_medmnist_val as sl_evaluation_medmnist
 
 ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
@@ -28,6 +26,8 @@ if RESNET_FLAG == 'resnet18':
 else:
     config['model'] = net_models_torch.TrainResNet50Simple 
 
+
+import dataset.data_processing_medmnist_val as data_processing_medmnist
 
 # experiment configs
 config['base_experiment_name'] = f"VAL_optimize_do_{DATA_FLAG}_{RESNET_FLAG}"

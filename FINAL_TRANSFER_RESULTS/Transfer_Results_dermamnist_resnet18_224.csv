@@ -1,0 +1,7 @@
+Run Type;Dataset;Resolution;Seed;Val AUC;Val ACC;Test AUC;Test ACC;Policy Source;Total Time;Matrix File
+Individual Seed;dermamnist;224;1;0.9271526880043311;0.7547357926221336;0.9190620176561726;0.7506234413965087;dermamnist_VAL_optimize_do_dermamnist_resnet18_5.csv;4062.0515928268433;confusion_matrix_seed_1.txt
+Individual Seed;dermamnist;224;2;0.9208888644951356;0.7567298105682951;0.9191309291407835;0.7486284289276808;dermamnist_VAL_optimize_do_dermamnist_resnet18_5.csv;3384.492118358612;confusion_matrix_seed_2.txt
+Individual Seed;dermamnist;224;3;0.9265800406644129;0.7676969092721835;0.9251006567370895;0.7650872817955112;dermamnist_VAL_optimize_do_dermamnist_resnet18_5.csv;3104.5846626758575;confusion_matrix_seed_3.txt
+Individual Seed;dermamnist;224;4;0.9279038410906565;0.7716849451645065;0.9227319576150245;0.7506234413965087;dermamnist_VAL_optimize_do_dermamnist_resnet18_5.csv;4309.040145874023;confusion_matrix_seed_4.txt
+Individual Seed;dermamnist;224;5;0.918912994919659;0.7497507477567298;0.9205009343446788;0.741645885286783;dermamnist_VAL_optimize_do_dermamnist_resnet18_5.csv;4604.481945991516;confusion_matrix_seed_5.txt
+FINAL SUMMARY;dermamnist;224;MEAN ± STD;0.9243 ± 0.0037;0.7601 ± 0.0082;0.9213 ± 0.0023;0.7513 ± 0.0076;-;-;-

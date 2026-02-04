@@ -1,0 +1,12 @@
+Generation: Final
+[[13, 5], [8, 52]]
+
+Generation: Final
+[[26, 11], [16, 103]]
+
+Generation: Final
+[[11, 4], [10, 53]]
+
+Generation: Final
+[[25, 9], [17, 105]]
+

@@ -1,0 +1,18 @@
+Generation: Final
+[[128, 9], [7, 380]]
+
+Generation: Final
+[[159, 4], [75, 386]]
+
+Generation: Final
+[[127, 6], [8, 383]]
+
+Generation: Final
+[[148, 2], [86, 388]]
+
+Generation: Final
+[[122, 5], [13, 384]]
+
+Generation: Final
+[[136, 2], [98, 388]]
+

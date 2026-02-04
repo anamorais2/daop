@@ -6,8 +6,6 @@ import numpy as np
 import random
 import gc
 from pympler.tracker import SummaryTracker
-import sl_evaluation_medmnist_val as sl_evaluation_medmnist
-import pandas as pd
 import os
 import numpy as np
 
@@ -31,9 +29,7 @@ def write_gen_stats(config, gen, population, best_individual):
     file_path = os.path.join(config['output_csv_folder'], f'{config["dataset"]}_{config["experiment_name"]}_{config["seed"]}.csv')
     file_path_backup = os.path.join(config['output_csv_folder'], f'{config["dataset"]}_{config["experiment_name"]}_{config["seed"]}_backup.csv')
 
-    # --- Clean curve data (to avoid polluting the CSV) ---
-    # Create a "clean" copy of the population to save in the CSV
-    # (Removing 'fpr' and 'tpr' arrays from the training history at individual[4])
+   
     population_to_save = []
     for ind in population:
         if ind[4] is not None:  # If there is history

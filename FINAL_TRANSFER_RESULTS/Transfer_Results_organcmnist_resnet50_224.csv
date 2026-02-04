@@ -1,0 +1,7 @@
+Run Type;Dataset;Resolution;Seed;Val AUC;Val ACC;Test AUC;Test ACC;Policy Source;Total Time;Matrix File
+Individual Seed;organcmnist;224;1;0.9999876040568595;0.9891304347826086;0.9963596208882571;0.9273369036027264;organcmnist_VAL_optimize_do_organcmnist_resnet50_3.csv;2763.8710844516754;confusion_matrix_seed_1.txt
+Individual Seed;organcmnist;224;2;0.9999815438079183;0.987876254180602;0.9956788861960355;0.9307448880233691;organcmnist_VAL_optimize_do_organcmnist_resnet50_3.csv;2745.562996864319;confusion_matrix_seed_2.txt
+Individual Seed;organcmnist;224;3;0.9998947321284839;0.9887123745819398;0.9947811002422775;0.9203992210321325;organcmnist_VAL_optimize_do_organcmnist_resnet50_3.csv;2675.7623596191406;confusion_matrix_seed_3.txt
+Individual Seed;organcmnist;224;4;0.9999859433977387;0.9916387959866221;0.9957052997948908;0.9268500486854917;organcmnist_VAL_optimize_do_organcmnist_resnet50_3.csv;2685.133087158203;confusion_matrix_seed_4.txt
+Individual Seed;organcmnist;224;5;0.9999822918990752;0.987876254180602;0.9960837742719124;0.9326923076923077;organcmnist_VAL_optimize_do_organcmnist_resnet50_3.csv;2718.243906736374;confusion_matrix_seed_5.txt
+FINAL SUMMARY;organcmnist;224;MEAN ± STD;1.0000 ± 0.0000;0.9890 ± 0.0014;0.9957 ± 0.0005;0.9276 ± 0.0042;-;-;-

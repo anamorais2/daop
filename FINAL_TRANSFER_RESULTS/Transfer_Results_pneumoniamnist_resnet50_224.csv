@@ -1,0 +1,7 @@
+Run Type;Dataset;Resolution;Seed;Val AUC;Val ACC;Test AUC;Test ACC;Policy Source;Total Time;Matrix File
+Individual Seed;pneumoniamnist;224;1;0.9911834713891269;0.9694656488549618;0.9729673460442692;0.8862179487179487;pneumoniamnist_VAL_optimize_do_pneumoniamnist_resnet50_5.csv;14643.970103502274;confusion_matrix_seed_1.txt
+Individual Seed;pneumoniamnist;224;2;0.9872226982766827;0.9580152671755725;0.9663379355687048;0.844551282051282;pneumoniamnist_VAL_optimize_do_pneumoniamnist_resnet50_5.csv;12100.226002931595;confusion_matrix_seed_2.txt
+Individual Seed;pneumoniamnist;224;3;0.9869370656003047;0.9599236641221374;0.971246986631602;0.8157051282051282;pneumoniamnist_VAL_optimize_do_pneumoniamnist_resnet50_5.csv;12328.844688892365;confusion_matrix_seed_3.txt
+Individual Seed;pneumoniamnist;224;4;0.9889174521565267;0.9370229007633588;0.9595332018408942;0.8878205128205128;pneumoniamnist_VAL_optimize_do_pneumoniamnist_resnet50_5.csv;15169.990780115128;confusion_matrix_seed_4.txt
+Individual Seed;pneumoniamnist;224;5;0.991907074169285;0.9389312977099237;0.9735700197238659;0.8205128205128205;pneumoniamnist_VAL_optimize_do_pneumoniamnist_resnet50_5.csv;13459.957719802856;confusion_matrix_seed_5.txt
+FINAL SUMMARY;pneumoniamnist;224;MEAN ± STD;0.9892 ± 0.0020;0.9527 ± 0.0126;0.9687 ± 0.0053;0.8510 ± 0.0310;-;-;-

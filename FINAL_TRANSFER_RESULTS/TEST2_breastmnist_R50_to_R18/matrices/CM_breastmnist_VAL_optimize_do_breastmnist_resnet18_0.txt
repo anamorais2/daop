@@ -1,0 +1,54 @@
+Generation: Final
+[[12, 5], [9, 52]]
+
+Generation: Final
+[[25, 8], [17, 106]]
+
+Generation: Final
+[[14, 6], [7, 51]]
+
+Generation: Final
+[[24, 7], [18, 107]]
+
+Generation: Final
+[[18, 9], [3, 48]]
+
+Generation: Final
+[[35, 19], [7, 95]]
+
+Generation: Final
+[[15, 9], [6, 48]]
+
+Generation: Final
+[[29, 17], [13, 97]]
+
+Generation: Final
+[[14, 5], [7, 52]]
+
+Generation: Final
+[[25, 13], [17, 101]]
+
+Generation: Final
+[[13, 3], [8, 54]]
+
+Generation: Final
+[[24, 10], [18, 104]]
+
+Generation: Final
+[[12, 1], [9, 56]]
+
+Generation: Final
+[[25, 9], [17, 105]]
+
+Generation: Final
+[[16, 8], [5, 49]]
+
+Generation: Final
+[[25, 6], [17, 108]]
+
+Generation: Final
+[[12, 2], [9, 55]]
+
+Generation: Final
+[[15, 6], [27, 108]]
+
