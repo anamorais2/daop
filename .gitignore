@@ -163,3 +163,9 @@ cython_debug/
 cache*
 states*
 output*
+VAL*
+FINAL*
+run*
+*_graphs
+
+*.npz

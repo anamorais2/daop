@@ -8,8 +8,8 @@ from scipy import stats
 ALPHA_95 = 0.05
 ALPHA_99 = 0.01
 
-DATASETS = ["BreastMnist"]# , "DermaMnist", "PneumoniaMnist", "OrganCMnist"]
-METRICS = ["AUC", "AAC"]
+DATASETS = ["OrganCMnist"]# , "DermaMnist", "PneumoniaMnist", "OrganCMnist"]
+METRICS = ["AUC", "ACC"]
 
 REFERENCES = [
     "Baseline (ResNet-18)",
@@ -20,27 +20,26 @@ REFERENCES = [
 ]
 
 DAOP_VARIANTS = [
-    "DAOP Mean (ResNet-18)",
-    "DAOP Mean (ResNet-50)",
+    "DAOP RS Mean (ResNet-18)",
+    "DAOP RS Mean (ResNet-50)",
 ]
 
 
 DATA = {
-    "BreastMnist": {
-        "DAOP Mean (ResNet-18)": {
-            "AUC": [0.921, 0.934, 0.927, 0.931, 0.926, 0.939, 0.935, 0.928, 0.930, 0.929],
-            "AAC": [0.862, 0.878, 0.871, 0.876, 0.873, 0.889, 0.884, 0.872, 0.875, 0.874],
-        },
-        "DAOP Mean (ResNet-50)": {
-            "AUC": [0.912, 0.920, 0.917, 0.921, 0.918, 0.927, 0.923, 0.919, 0.916, 0.919],
-            "AAC": [0.861, 0.872, 0.868, 0.875, 0.869, 0.882, 0.878, 0.871, 0.866, 0.870],
-        },
-        "Baseline (ResNet-18)": {"AUC": 0.901, "AAC": 0.863},
-        "Baseline (ResNet-50)": {"AUC": 0.857, "AAC": 0.812},
-        "Auto-sklearn":         {"AUC": 0.836, "AAC": 0.803},
-        "AutoKeras":            {"AUC": 0.871, "AAC": 0.831},
-        "Google AutoML":        {"AUC": 0.919, "AAC": 0.861},
-    },
+    "OrganCMnist": {
+        "DAOP RS Mean (ResNet-18)": {
+            "AUC": [0.993, 0.992, 0.993, 0.994, 0.992, 0.992, 0.993, 0.991, 0.9909, 0.9935],
+            "ACC": [0.911, 0.9030, 0.901, 0.9131, 0.898, 0.900, 0.904, 0.8948, 0.8939, 0.9088],
+            },
+        "DAOP RS Mean (ResNet-50)": {
+            "AUC": [0.990, 0.989, 0.9924, 0.9906, 0.992, 0.989, 0.992, 0.9913, 0.9881, 0.993],
+            "ACC": [0.888, 0.8811, 0.9029, 0.8794, 0.900, 0.887, 0.899, 0.8961, 0.8794, 0.9023],
+            },
+        "Baseline (ResNet-18)": {"AUC": 0.992, "ACC": 0.900},
+        "Baseline (ResNet-50)": {"AUC": 0.992, "ACC": 0.905},
+        "Auto-sklearn":         {"AUC": 0.976, "ACC": 0.829},
+        "AutoKeras":            {"AUC": 0.990, "ACC": 0.879},
+        "Google AutoML":        {"AUC": 0.988, "ACC": 0.877},}
     
 }
 

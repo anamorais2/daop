@@ -6,6 +6,7 @@ DAOP is an evolutionary framework that optimizes data augmentation policies onli
 
 ---
 
+
 ## Framework Overview
 
 DAOP is composed of three main modules:
@@ -13,6 +14,9 @@ DAOP is composed of three main modules:
 - **ES Module** — evolves augmentation policies using an evolutionary strategy
 - **DA Module** — applies candidate augmentation policies online during training
 - **ML Module** — trains the classifier and returns validation performance as fitness
+
+
+![DAOP Framework Schema](EsquemaDAOP.png)
 
 This repository implements this pipeline for:
 - MedMNIST datasets (BreastMNIST, DermaMNIST, PneumoniaMNIST, OrganCMNIST)
@@ -80,18 +84,20 @@ or with a number appended, which represents a specific seed:
 python main_sl_medmnist_val.py 1 
 ```
 
-## Configuration
+## Configuration & Setup
 
-The framework is highly configurable. Most experiment settings can be modified through command-line arguments or configuration files in `configs/`, including:
+Instead of complex command-line arguments, experiments are easily configured by directly editing the top variables in the main script (or configuration file). 
 
-- Dataset selection
-- Model architecture (ResNet-18, ResNet-50)
-- Evolutionary parameters (generations, population size, mutation rates)
-- Training hyperparameters (learning rate, batch size, epochs)
+To change the dataset, model, or to run the Random Search baseline, simply adjust these flags:
 
-This allows easy adaptation to new datasets, models, or augmentation operators.
+```python
+DATA_FLAG = 'pneumoniamnist'  # Options: breastmnist, dermamnist, pneumoniamnist, organcmnist
+RESNET_FLAG = 'resnet18'      # Options: resnet18, resnet50
+NUM_CLASSES_MEDMNIST = 2      # Adjust based on the dataset
 
----
+config = {}
+config['random_search'] = True  # Set to False to run the Evolutionary Search (DAOP)
+```
 
 ## Relation to the Original DAOP Framework (SSL)
 

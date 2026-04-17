@@ -12,11 +12,13 @@ import sl_evaluation_medmnist_val as sl_evaluation_medmnist
 ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 
 
-DATA_FLAG = 'tissuemnist' # PneumoniaMNIST
+DATA_FLAG = 'dermamnist' # PneumoniaMNIST
 RESNET_FLAG = 'resnet18'
-NUM_CLASSES_MEDMNIST = 8 
+NUM_CLASSES_MEDMNIST = 7
 
 config = {}
+
+config['random_search'] = True
 
 if RESNET_FLAG == 'resnet18':
     config['model'] = net_models_torch.TrainResNet18Simple 
@@ -27,8 +29,10 @@ else:
 
 import dataset.data_processing_medmnist_val as data_processing_medmnist
 
+
+
 # experiment configs
-config['base_experiment_name'] = f"VAL_optimize_do_{DATA_FLAG}_{RESNET_FLAG}"
+config['base_experiment_name'] = f"VAL_optimize_do_{DATA_FLAG}_{RESNET_FLAG}_RandomSearch"
 config['experiment_name'] = config['base_experiment_name']
 config['output_csv_folder'] = "VAL_output_csv" + "_" + config['base_experiment_name']
 config['seeds'] = range(5)

@@ -99,8 +99,7 @@ def plot_aggregated(all_data_list, output_file, title_text):
 
 if __name__ == "__main__":
 
-    # --- INPUT SETTINGS ---
-    INPUT_FOLDER = "/home/arya/Documents/carolina/daop/VAL_output_csv_VAL_optimize_do_pneumoniamnist_resnet50"
+    INPUT_FOLDER = ""
     OUTPUT_FOLDER = "pneumoniamnist_resnet50_graphs"
 
     MAX_GENERATIONS = 200 
