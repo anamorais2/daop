@@ -4,7 +4,7 @@ import pandas as pd
 import ast
 import analysis.plot_roc as plot_roc
 import configs.config_base_val as config_base
-import EA_medmnist_val as EA
+import EA_medmnist_val_RandomSearch as EA
 
 
 def completed_run(config):

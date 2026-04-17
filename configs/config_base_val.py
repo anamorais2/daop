@@ -1,26 +1,24 @@
 import torch
 import DA.data_augmentation_albumentations as data_augmentation_albumentations
 import net_models_torch
-import rotnet_torch
 import state_manager_torch
 import mutations
 import chromosomes
 import train_with_DA
 import evolution_mod_functions
-import dataset.data_processing_medmnist_val as data_processing_medmnist
+
 import sl_evaluation_medmnist_val as sl_evaluation_medmnist
 
 ROTNET_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
-# FIX_PRETEXT_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [1.0, 0.5, 0.5, 0.5, 0.5]]]
-# FIX_DOWNSTREAM_DA = [[0, [1.0, 0.2, 0.2, 0.2, 0.2]], [1, [0.5, 0.5, 0.5, 0.5, 0.5]]]
 
-# START_PARENT = [[43, [0.33, 0.56, 0.35, 0.32]]]
 
-DATA_FLAG = 'pneumoniamnist' # PneumoniaMNIST
-RESNET_FLAG = 'resnet50'
-NUM_CLASSES_MEDMNIST = 2 
+DATA_FLAG = 'dermamnist' # PneumoniaMNIST
+RESNET_FLAG = 'resnet18'
+NUM_CLASSES_MEDMNIST = 7
 
 config = {}
+
+config['random_search'] = True
 
 if RESNET_FLAG == 'resnet18':
     config['model'] = net_models_torch.TrainResNet18Simple 
@@ -29,8 +27,12 @@ else:
     config['model'] = net_models_torch.TrainResNet50Simple 
 
 
+import dataset.data_processing_medmnist_val as data_processing_medmnist
+
+
+
 # experiment configs
-config['base_experiment_name'] = f"VAL_optimize_do_{DATA_FLAG}_{RESNET_FLAG}"
+config['base_experiment_name'] = f"VAL_optimize_do_{DATA_FLAG}_{RESNET_FLAG}_RandomSearch"
 config['experiment_name'] = config['base_experiment_name']
 config['output_csv_folder'] = "VAL_output_csv" + "_" + config['base_experiment_name']
 config['seeds'] = range(5)

@@ -1,17 +1,14 @@
+from logging import config
 import os
 import torch
-import torchvision.transforms as transforms
 import albumentations as A
 import numpy as np 
 from albumentations.pytorch import ToTensorV2
 from medmnist import INFO, Evaluator, dataset as medmnist_dataset
-
-import rotnet_torch
-import DA.data_augmentation_albumentations as data_augmentation_albumentations
 import configs.config_base_val as config
+import DA.data_augmentation_albumentations as data_augmentation_albumentations
 
-
-DATA_FLAG = 'pneumoniamnist' # CHANGE HERE WHENEVER USING A DIFFERENT MEDMNIST DATASET
+DATA_FLAG = config.DATA_FLAG
 INFO = INFO[DATA_FLAG]
 DataClass = getattr(medmnist_dataset, INFO['python_class'])
 
@@ -39,7 +36,6 @@ class MEDMNISTAlbumentations(DataClass):
         
 
         if self.transform is not None:
-            # Apply Albumentations transforms, which now receive 3 channels
             transformed = self.transform(image=img)
             img = transformed['image']
 
@@ -53,91 +49,6 @@ def dataset_transforms():
     std = [0.5, 0.5, 0.5]
 
     return [], [A.Normalize(mean=mean, std=std), ToTensorV2()]
-
-
-def load_dataset(individual, config):
-    if not os.path.exists(config['cache_folder']):
-        print(f"Folder {config['cache_folder']} does not exist, creating it")
-        os.makedirs(config['cache_folder'])
-        print(f"Created {config['cache_folder']}/")
-
-    transforms_before_augs, transforms_after_augs = config['dataset_transforms']()
-    
-    transform = A.Compose(transforms_before_augs + transforms_after_augs)
-
-    pretext_augs = data_augmentation_albumentations.map_augments(individual[0], config)
-    print(f"Pretext augs: {pretext_augs}")
-    transform_pretext_augs = A.Compose(transforms_before_augs + pretext_augs + transforms_after_augs)
-
-    downstream_augs = data_augmentation_albumentations.map_augments(individual[1], config)
-    print(f"Downstream augs: {downstream_augs}")
-    transform_downstream_augs = A.Compose(transforms_before_augs + downstream_augs + transforms_after_augs)
-
-    print(f"Loading dataset {DATA_FLAG} from {config['cache_folder']}/")
-
-    download_needed = not os.path.exists(os.path.join(config['cache_folder'], DATA_FLAG + '.npz'))
-    
-    trainset_pretext = MEDMNISTAlbumentations(root=config['cache_folder'], split='train', 
-        download=download_needed, transform=transform_pretext_augs)
-    trainset_downstream = MEDMNISTAlbumentations(root=config['cache_folder'], split='train', 
-        download=False, transform=transform_downstream_augs)
-    
-    testset_pretext = MEDMNISTAlbumentations(root=config['cache_folder'], split='test', 
-        download=False, transform=transform)
-    testset_downstream = MEDMNISTAlbumentations(root=config['cache_folder'], split='test', 
-        download=False, transform=transform)
-    
-    print(f"Dataset {DATA_FLAG} loaded successfully.")
-    return trainset_pretext, trainset_downstream, testset_pretext, testset_downstream
-
-
-def create_data_loaders(trainset_pretext, trainset_downstream, testset_pretext, testset_downstream, config):
-    
-    print("Creating data loaders")
-
-
-    is_cuda_active = config['rotations_on_cuda'] and config['device'] == torch.device('cuda')
-
-    collate_fn = rotnet_torch.rotnet_collate_fn_cuda if is_cuda_active else rotnet_torch.rotnet_collate_fn
-    
-    trainloader_pretext = torch.utils.data.DataLoader(
-        trainset_pretext, 
-        batch_size=config['pretext_batch_size'](), 
-        shuffle=config['shuffle_dataset'], 
-        collate_fn=collate_fn, 
-        num_workers=config['num_workers'], 
-        pin_memory=True
-    )
-    testloader_pretext = torch.utils.data.DataLoader(
-        testset_pretext, 
-        batch_size=config['pretext_batch_size'](), 
-        shuffle=False, 
-        collate_fn=collate_fn, 
-        num_workers=config['num_workers'], 
-        pin_memory=True
-    )
-
-    trainloader_downstream = torch.utils.data.DataLoader(
-        trainset_downstream, 
-        batch_size=config['downstream_batch_size'](), 
-        shuffle=config['shuffle_dataset'], 
-        num_workers=config['num_workers'], 
-        pin_memory=True
-    )
-    testloader_downstream = torch.utils.data.DataLoader(
-        testset_downstream, 
-        batch_size=config['downstream_batch_size'](), 
-        shuffle=False, 
-        num_workers=config['num_workers'], 
-        pin_memory=True
-    )
-
-    mode = "cuda" if is_cuda_active else "default"
-    print(f"Data loaders created ({mode} mode)")
-
-    return trainloader_pretext, trainloader_downstream, testloader_pretext, testloader_downstream
-    
-    
 
 def load_dataset_simple(individual, config):
     

@@ -1,5 +1,0 @@
-Run Type;Dataset;Resolution;Seed;Val AUC;Val ACC;Test AUC;Test ACC;Policy Source;Total Time;Matrix File
-Individual Seed;breastmnist;224;1;0.9348370927318295;0.8717948717948718;0.9202172096908939;0.8525641025641025;breastmnist_VAL_optimize_do_breastmnist_resnet18_7.csv;2390.9798040390015;confusion_matrix_seed_1.txt
-Individual Seed;breastmnist;224;2;0.9223057644110275;0.8589743589743589;0.8995405179615706;0.8525641025641025;breastmnist_VAL_optimize_do_breastmnist_resnet18_7.csv;1838.81041097641;confusion_matrix_seed_2.txt
-Individual Seed;breastmnist;224;3;0.9515455304928989;0.9230769230769231;0.8954678362573097;0.8589743589743589;breastmnist_VAL_optimize_do_breastmnist_resnet18_7.csv;1580.1601853370667;confusion_matrix_seed_3.txt
-FINAL SUMMARY;breastmnist;224;MEAN ± STD;0.9362 ± 0.0120;0.8846 ± 0.0277;0.9051 ± 0.0108;0.8547 ± 0.0030;-;-;-

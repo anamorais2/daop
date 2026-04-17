@@ -115,6 +115,7 @@ def ea(config):
 
         evolution_mod(config, past_gen=True)
 
+    global_best_individual = None
     # main evolution loop
     for gen in range(config['start_gen'], config['stop_gen']+1):
         if config['max_generations_per_run'] is not None:
@@ -134,40 +135,46 @@ def ea(config):
 
         # new generation population
         if config['start_population'] is None:
-            population = [copy.deepcopy(best_gen_individual)]
-            for _ in range(config['population_size']-1):
-                genotype = [
-                    config["fix_pretext_da"] if config['fix_pretext_da'] is not None else None,    # 0 - pretext
-                    config["fix_downstream_da"] if config['fix_downstream_da'] is not None else None,    # 1 - downstream
-                ]
+            if config.get('random_search', False):
+                print("[INFO] Generating individuals using Random Search")
+                population = []
+                for _ in range(config['population_size']):
+                    population.append(create_individual(config))
+            else:    
+                population = [copy.deepcopy(best_gen_individual)]
+                for _ in range(config['population_size']-1):
+                    genotype = [
+                        config["fix_pretext_da"] if config['fix_pretext_da'] is not None else None,    # 0 - pretext
+                        config["fix_downstream_da"] if config['fix_downstream_da'] is not None else None,    # 1 - downstream
+                    ]
 
-                if config['fix_pretext_da'] is None or config['fix_downstream_da'] is None:
-                    if config['evolution_type'] == 'same':
-                        # print("Same evolution type mutation")
-                        mutation_phase = 0 if config['fix_pretext_da'] is None else 1    # pretext or downstream chromosome mutation if fixed DAs are used
-                        chromosomes = config['mutation'](best_gen_individual[0][mutation_phase], config)
-                        if config['fix_pretext_da'] is None:
-                            genotype[0] = chromosomes    # mutated pretext chromosomes
-                        if config['fix_downstream_da'] is None:
-                            genotype[1] = chromosomes    # mutated downstream chromosomes
-                    elif config['evolution_type'] == 'simultaneous':
-                        # print("Simultaneous evolution type mutation")
-                        if config['fix_pretext_da'] is None:
-                            genotype[0] = config['mutation'](best_gen_individual[0][0], config)  # mutated pretext chromosomes
-                        if config['fix_downstream_da'] is None:
-                            genotype[1] = config['mutation'](best_gen_individual[0][1], config)  # mutated downstream chromosomes
-                    else:
-                        raise ValueError(f"Unknown evolution type: {config['evolution_type']}")
+                    if config['fix_pretext_da'] is None or config['fix_downstream_da'] is None:
+                        if config['evolution_type'] == 'same':
+                            # print("Same evolution type mutation")
+                            mutation_phase = 0 if config['fix_pretext_da'] is None else 1    # pretext or downstream chromosome mutation if fixed DAs are used
+                            chromosomes = config['mutation'](best_gen_individual[0][mutation_phase], config)
+                            if config['fix_pretext_da'] is None:
+                                genotype[0] = chromosomes    # mutated pretext chromosomes
+                            if config['fix_downstream_da'] is None:
+                                genotype[1] = chromosomes    # mutated downstream chromosomes
+                        elif config['evolution_type'] == 'simultaneous':
+                            # print("Simultaneous evolution type mutation")
+                            if config['fix_pretext_da'] is None:
+                                genotype[0] = config['mutation'](best_gen_individual[0][0], config)  # mutated pretext chromosomes
+                            if config['fix_downstream_da'] is None:
+                                genotype[1] = config['mutation'](best_gen_individual[0][1], config)  # mutated downstream chromosomes
+                        else:
+                            raise ValueError(f"Unknown evolution type: {config['evolution_type']}")
 
 
-                offspring = [
-                    genotype,    # mutated chromosomes
-                    None,  # reset fitness 
-                    None,  # reset pretext accuracy
-                    None,  # reset training time
-                    None,  # reset training history
-                ]
-                population.append(offspring)
+                    offspring = [
+                        genotype,    # mutated chromosomes
+                        None,  # reset fitness 
+                        None,  # reset pretext accuracy
+                        None,  # reset training time
+                        None,  # reset training history
+                    ]
+                    population.append(offspring)
 
             print("Parent:", population[0][:-1])
         else:
@@ -204,9 +211,12 @@ def ea(config):
         # best individual
         best_gen_individual = copy.deepcopy(max(population, key=lambda x: x[1]))
         
+        if global_best_individual is None or best_gen_individual[1] > global_best_individual[1]:
+            global_best_individual = copy.deepcopy(best_gen_individual)
 
         
-        write_gen_stats(config, gen, population, best_gen_individual)
+        #write_gen_stats(config, gen, population, best_gen_individual)
+        write_gen_stats(config, gen, population, global_best_individual)
 
         if config['save_state']:
             config['save_state'](config)
