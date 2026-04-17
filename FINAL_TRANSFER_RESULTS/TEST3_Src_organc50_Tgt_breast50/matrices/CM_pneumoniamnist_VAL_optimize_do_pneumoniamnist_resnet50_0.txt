@@ -1,6 +1,0 @@
-Generation: Final
-[[128, 14], [7, 375]]
-
-Generation: Final
-[[163, 8], [71, 382]]
-
