@@ -65,11 +65,13 @@ def load_dataset_simple(individual, config):
     if config.get('fix_pretext_da') is not None:
         # DO mode: use ONLY downstream (individual[1])
         augs_genotype = individual[1]
-        print(f"DO Mode detected - using downstream augs from individual[1]")
+        if config['debug']:
+            print(f"DO Mode detected - using downstream augs from individual[1]")
     else:
         # Pure SL mode: use individual[0]
         augs_genotype = individual[0]
-        print(f"SL Mode detected - using genotype from individual[0]")
+        if config['debug']:
+            print(f"SL Mode detected - using genotype from individual[0]")
     
    
     sl_augs_list = []
@@ -77,26 +79,31 @@ def load_dataset_simple(individual, config):
     if not augs_genotype or len(augs_genotype) == 0:
         # Empty list - no augmentations
         sl_augs_list = []
-        print(f"SL Augs: Empty (no augmentations)")
+        if config['debug']:
+            print(f"SL Augs: Empty (no augmentations)")
         
     elif isinstance(augs_genotype[0], list):
         # Augmentations list [[id, params], [id, params], ...]
         if len(augs_genotype[0]) == 2 and isinstance(augs_genotype[0][0], int):
             sl_augs_list = augs_genotype
-            print(f"SL Augs (list of augs): {sl_augs_list}")
+            if config['debug']:
+                print(f"SL Augs (list of augs): {sl_augs_list}")
         else:
             # Unexpected case - fallback
             sl_augs_list = augs_genotype
-            print(f"SL Augs (nested list - fallback): {sl_augs_list}")
+            if config['debug']:
+                print(f"SL Augs (nested list - fallback): {sl_augs_list}")
             
     elif len(augs_genotype) == 2 and isinstance(augs_genotype[0], int):
         # Single aug [id, params] - wrap into list
         sl_augs_list = [augs_genotype]
-        print(f"SL Augs (single aug wrapped): {sl_augs_list}")
+        if config['debug']:
+            print(f"SL Augs (single aug wrapped): {sl_augs_list}")
         
     else:
         # Generic fallback
         sl_augs_list = augs_genotype
+        #if config['debug']:
         print(f"SL Augs (fallback): {sl_augs_list}")
 
     # Map augmentations using the mapping function
@@ -116,13 +123,13 @@ def load_dataset_simple(individual, config):
     testset = MEDMNISTAlbumentations(root=config['cache_folder'], split='test', 
                                      download=False, transform=transform_eval)
     
-    print(f"Dataset {DATA_FLAG} loaded successfully.")
+    #print(f"Dataset {DATA_FLAG} loaded successfully.")
     
     return trainset, valset, testset
 
 def create_data_loaders_simple(trainset, valset, testset, config):
 
-    print("Creating DataLoaders (Train, Val, Test)...")
+    #print("Creating DataLoaders (Train, Val, Test)...")
     batch_size = config.get('batch_size', 128)
 
     trainloader = torch.utils.data.DataLoader(

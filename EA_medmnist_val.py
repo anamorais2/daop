@@ -180,7 +180,8 @@ def ea(config):
         # get fitness of each individual
         for i in range(config['population_size']):
             individual = population[i]
-            print(f"\nTraining individual {i+1} for {config['epochs']} epochs: {individual[0]}")
+            if config['debug']:
+                print(f"\nTraining individual {i+1} for {config['epochs']} epochs: {individual[0]}")
             if individual[1] is None or config['recalculate_best']:
                 
 
@@ -192,13 +193,13 @@ def ea(config):
                 end_time = time.perf_counter()
 
                 # individual[1], individual[2], individual[4] = [i, i, [i]]
-                print("Epochs: ", config['epochs'])
+                #print("Epochs: ", config['epochs'])
 
                 individual[3] = end_time - start_time
 
                 gc.collect()
 
-                print(f"Training time: {end_time - start_time:.2f} seconds")
+                #print(f"Training time: {end_time - start_time:.2f} seconds")
 
 
         # best individual
@@ -219,12 +220,14 @@ def ea(config):
                 del config['best_individuals'][-1]
             config['best_individuals'].append(best_gen_individual)
             config['best_individuals'].sort(key=lambda x: x[1], reverse=True)
-            print(f"New Top {config['best_n']} individual:", best_gen_individual[:-1])
+            if config['debug']:
+                print(f"New Top {config['best_n']} individual:", best_gen_individual[:-1])
 
             # list top n individuals
-            print(f"Updated Top {config['best_n']} individuals:")
-            for i, individual in enumerate(config['best_individuals']):
-                print(f"\tTop {i+1}/{config['best_n']} individual: {individual[:-1]}")
+            if config['debug']:
+                print(f"Updated Top {config['best_n']} individuals:")
+                for i, individual in enumerate(config['best_individuals']):
+                    print(f"\tTop {i+1}/{config['best_n']} individual: {individual[:-1]}")
 
 
 

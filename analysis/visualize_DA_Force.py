@@ -8,16 +8,16 @@ from albumentations.pytorch import ToTensorV2
 import cv2
 
 # ==========================================
-# 1. YOUR BEST INDIVIDUAL (Genotype)
+# 1. YOUR BEST INDIVIDUAL (Genotype) - DermaMNIST
 # ==========================================
-# ID 38: Illumination (Gaussian) | Orig Prob: 0.12 -> Force to 1.0
-# ID 0: Pad & Random Crop        | Orig Prob: 0.17 -> Force to 1.0
-# ID 8: Channel Shuffle          | Orig Prob: 0.49 -> Force to 1.0
+# ID 36: Illumination (Corner) | Orig Prob: 0.71 -> Force to 1.0
+# ID 1: HorizontalFlip         | Orig Prob: 0.32 -> Force to 1.0
+# ID 6: Perspective            | Orig Prob: 0.97 -> Force to 1.0
 
 BEST_INDIVIDUAL = [
-    [38, [0.12, 0.29, 1.0, 1.0, 0.61]], 
-    [0,  [0.17, 0.66, 0.04, 0.46, 0.43]], 
-    [8,  [0.49, 0.93, 0.59, 0.8, 0.13]]
+    [36, [0.71, 0.32, 0.72, 0.60, 0.97]], 
+    [1,  [0.32, 0.59, 0.55, 0.01, 0.82]], 
+    [6,  [0.97, 0.22, 0.37, 0.00, 0.70]]
 ]
 
 interpolation = [cv2.INTER_NEAREST, cv2.INTER_LINEAR, cv2.INTER_CUBIC, cv2.INTER_AREA, cv2.INTER_LANCZOS4]
@@ -29,15 +29,14 @@ def get_da_functions(img_size, min_prob=0, max_prob=1):
     img_height = img_size[0]
     img_width = img_size[1]
     
-
     da_funcs = [
         lambda p0,p1,p2,p3,p4: A.Compose([A.Pad((int(p1*20), int(p2*20), int(p3*20), int(p4*20)), p=1.0), A.RandomCrop(height=img_height, width=img_width, p=1.0)], p=p0*(max_prob-min_prob)+min_prob),
-        lambda p0,p1,p2,p3,p4: A.HorizontalFlip(p=p0*(max_prob-min_prob)+min_prob),
+        lambda p0,p1,p2,p3,p4: A.HorizontalFlip(p=p0*(max_prob-min_prob)+min_prob), # ID 1
         lambda p0,p1,p2,p3,p4: A.VerticalFlip(p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.Rotate(limit=sorted((p1*180-90, p2*180-90)), interpolation=interpolation[int(p3*len(interpolation)*0.99)], border_mode=border_type[int(p4*len(border_type)*0.99)], p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.Affine(translate_percent=sorted((p1*2-1, p2*2-1)), interpolation=interpolation[int(p3*len(interpolation)*0.99)], border_mode=border_type[int(p4*len(border_type)*0.99)], p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.Affine(shear=sorted((p1*360-180, p2*360-180)), interpolation=interpolation[int(p3*len(interpolation)*0.99)], border_mode=border_type[int(p4*len(border_type)*0.99)], p=p0*(max_prob-min_prob)+min_prob),
-        lambda p0,p1,p2,p3,p4: A.Perspective(scale=sorted((p1*2,p2*2)), interpolation=interpolation[int(p3*len(interpolation)*0.99)], p=p0*(max_prob-min_prob)+min_prob),
+        lambda p0,p1,p2,p3,p4: A.Perspective(scale=sorted((p1*2,p2*2)), interpolation=interpolation[int(p3*len(interpolation)*0.99)], p=p0*(max_prob-min_prob)+min_prob), # ID 6
         lambda p0,p1,p2,p3,p4: A.ElasticTransform(alpha=p1*1000+1, sigma=p2*100+1, interpolation=interpolation[int(p3*len(interpolation)*0.99)], p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.ChannelShuffle(p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.ToGray(num_output_channels=3, method=grayscale_methods[int(p1*len(grayscale_methods)*0.99)], p=p0*(max_prob-min_prob)+min_prob),
@@ -67,8 +66,8 @@ def get_da_functions(img_size, min_prob=0, max_prob=1):
         lambda p0,p1,p2,p3,p4: A.PlanckianJitter(mode='blackbody' if p1 < 0.5 else 'cied', sampling_method='gaussian' if p2 < 0.5 else 'uniform', p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.ChannelDropout(channel_drop_range=sorted((int(p1*1.99)+1, int(p2*1.99)+1)), fill=p3*255, p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.Illumination(mode='linear', intensity_range=sorted((p1*0.19+0.01, p2*0.19+0.01)), angle_range=sorted((p3*360, p4*360)), p=p0*(max_prob-min_prob)+min_prob),
-        lambda p0,p1,p2,p3,p4: A.Illumination(mode='corner', intensity_range=sorted((p1*0.19+0.01, p2*0.19+0.01)), effect_type=illumination_effects[int(p3*len(illumination_effects)*0.99)], p=p0*(max_prob-min_prob)+min_prob),
-        lambda p0,p1,p2,p3,p4: A.Illumination(mode='gaussian', intensity_range=sorted((p1*0.19+0.01, p2*0.19+0.01)), center_range=sorted((p3, p4)), p=p0*(max_prob-min_prob)+min_prob), # ID 38
+        lambda p0,p1,p2,p3,p4: A.Illumination(mode='corner', intensity_range=sorted((p1*0.19+0.01, p2*0.19+0.01)), effect_type=illumination_effects[int(p3*len(illumination_effects)*0.99)], p=p0*(max_prob-min_prob)+min_prob), # ID 36
+        lambda p0,p1,p2,p3,p4: A.Illumination(mode='gaussian', intensity_range=sorted((p1*0.19+0.01, p2*0.19+0.01)), center_range=sorted((p3, p4)), p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.PlasmaShadow(shadow_intensity_range=sorted((p1, p2)), roughness=p3*5+0.1, p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.RandomRain(slant_range=sorted((p1*40-20, p2*40-20)), drop_length=int(p3*20)+1, drop_width=int(p4*20)+1, p=p0*(max_prob-min_prob)+min_prob),
         lambda p0,p1,p2,p3,p4: A.SaltAndPepper(amount=sorted((p1,p2)), salt_vs_pepper=(p3,1-p3), p=p0*(max_prob-min_prob)+min_prob),
@@ -84,62 +83,82 @@ available_funcs = get_da_functions(img_size=(IMG_HEIGHT, IMG_WIDTH))
 
 pipeline_steps = [A.Resize(IMG_HEIGHT, IMG_WIDTH)]
 
-print("Building forced visual pipeline (p=1.0)...")
+print("Building forced visual pipeline (p=1.0) for DermaMNIST...")
 
 for gene in BEST_INDIVIDUAL:
     func_idx = gene[0]  
     params = gene[1]    
     
-
-    forced_params = [1.0] + params[1:] 
+    # Forcing application probability (index 0) to 0.0
+    forced_params = [0.0] + params[1:] 
     
     try:
         if func_idx < len(available_funcs):
             transform = available_funcs[func_idx](*forced_params)
             pipeline_steps.append(transform)
-            print(f" -> Added Transform ID {func_idx} (Original Params: {params[0]:.2f} -> Forced: 1.0)")
+            print(f" -> Added Transform ID {func_idx} (Original Prob: {params[0]:.2f} -> Forced: 1.0)")
     except Exception as e:
         print(f"Error ID {func_idx}: {e}")
 
 evolved_pipeline = A.Compose(pipeline_steps)
 
-
-DATA_FLAG = 'breastmnist'
+# ==========================================
+# 2. LOAD DERMAMNIST DATASET
+# ==========================================
+DATA_FLAG = 'dermamnist'
 info = INFO[DATA_FLAG]
 DataClass = getattr(medmnist, info['python_class'])
 dataset = DataClass(split='train', download=True, size=224)
 
-target_images = {0: None, 1: None}
-classes_name = {0: 'Malignant', 1: 'Benign'}
+# Pick two distinct classes to show (e.g., 4: Melanoma, 5: Melanocytic nevi)
+# The labels in DermaMNIST are arrays like [4], so we extract the int
+target_classes = [4, 5] 
+target_images = {4: None, 5: None}
+
+# Official MedMNIST DermaMNIST class names
+classes_name = {
+    0: 'Actinic keratoses', 
+    1: 'Basal cell carcinoma', 
+    2: 'Benign keratosis', 
+    3: 'Dermatofibroma', 
+    4: 'Melanoma', 
+    5: 'Melanocytic nevi', 
+    6: 'Vascular lesions'
+}
 
 for i in range(len(dataset)):
     img, label = dataset[i]
-    lbl = label.item() #
+    lbl = label.item()
     
-    if target_images[lbl] is None:
+    if lbl in target_classes and target_images[lbl] is None:
         target_images[lbl] = np.array(img)
-    if target_images[0] is not None and target_images[1] is not None:
+        
+    # Break when we have 1 image for each target class
+    if all(img is not None for img in target_images.values()):
         break
 
-fig, axs = plt.subplots(2, 2, figsize=(8, 8))
-fig.suptitle(f"Phenotype Visualization: Best Individual (Seed 1)\nDataset: {DATA_FLAG}", fontsize=14)
+# ==========================================
+# 3. PLOT AND SAVE THE RESULTS
+# ==========================================
+fig, axs = plt.subplots(2, 2, figsize=(10, 8))
 
 for row, (lbl, original_img) in enumerate(target_images.items()):
-    if len(original_img.shape) == 2:
-        img_input = np.stack((original_img,)*3, axis=-1)
-    else:
-        img_input = original_img
+    # DermaMNIST is natively RGB, no need to stack channels
+    img_input = original_img
 
+    # Apply the pipeline
     transformed = evolved_pipeline(image=img_input)['image']
     
-    axs[row, 0].imshow(img_input, cmap='gray')
-    axs[row, 0].set_title(f"Original ({classes_name[lbl]})")
+    # Plot Original (RGB)
+    axs[row, 0].imshow(img_input)
+    axs[row, 0].set_title(f"Original: {classes_name[lbl]}")
     axs[row, 0].axis('off')
     
-    axs[row, 1].imshow(transformed, cmap='gray')
-    axs[row, 1].set_title(f"Evolved Augmentation")
+    # Plot Transformed (RGB)
+    axs[row, 1].imshow(transformed)
+    axs[row, 1].set_title(f"Offline DAOP Policy (DermaMNIST)")
     axs[row, 1].axis('off')
 
 plt.tight_layout()
+plt.savefig('dermamnist_phenotype.pdf', dpi=300, bbox_inches='tight')
 plt.show()
-
