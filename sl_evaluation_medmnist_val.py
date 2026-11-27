@@ -48,12 +48,14 @@ def train_sl(model, trainloader, config):
         final_loss = running_loss / len(trainloader)
         final_acc = running_acc / len(trainloader)
 
-        print(f"Epoch {epoch + 1}, Total {i + 1} batches, Loss: {final_loss :.4f}, Accuracy: {final_acc :.4f}")
+        if config['debug']:
+            print(f"Epoch {epoch + 1}, Total {i + 1} batches, Loss: {final_loss :.4f}, Accuracy: {final_acc :.4f}")
 
         hist_loss.append(final_loss)
         hist_acc.append(final_acc)
 
-    print("Finished Supervised Learning (SL) training")
+    if config['debug']:
+        print("Finished Supervised Learning (SL) training")
     return hist_loss, hist_acc
 
 def run_inference(model, loader, device, confusion_matrix_config=None, config=None):
@@ -138,7 +140,8 @@ def run_inference(model, loader, device, confusion_matrix_config=None, config=No
         conf_matrix = multiclass_confusion_matrix(all_labels_cm_tensor, all_predicted_cm_tensor, num_classes=num_classes)
         
         if confusion_matrix_config.get('print_confusion_matrix', False):
-            print(f"Confusion Matrix:\n{conf_matrix.tolist()}")
+            #print(f"Confusion Matrix:\n{conf_matrix.tolist()}")
+            pass
 
         if confusion_matrix_config.get('confusion_matrix_folder'):
             folder = confusion_matrix_config['confusion_matrix_folder']
@@ -195,7 +198,8 @@ def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
 
 
     sl_acc = correct / total
-    print(f"SL Test Accuracy: {sl_acc * 100:.2f}%")
+    if config['debug']:
+        print(f"SL Test Accuracy: {sl_acc * 100:.2f}%")
 
     all_labels_tensor = torch.cat(all_labels_list)
     all_outputs_tensor = torch.cat(all_outputs_list)
@@ -213,8 +217,9 @@ def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
         auc_std = 0.0  # Placeholder, can compute std if needed
        
         fpr, tpr, thresholds = roc_curve(labels_binary, probs_binary)
-        
-        print(f"SL Test AUC (2-Class): {roc_auc:.4f}")
+
+        if config['debug']:
+            print(f"SL Test AUC (2-Class): {roc_auc:.4f}")
         
     else:
         # 2. MULTI-CLASS (e.g. ChestMNIST)
@@ -230,7 +235,8 @@ def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
             roc_auc = np.mean(roc_auc_per_class)
             auc_std = np.std(roc_auc_per_class)
 
-            print(f"SL Test AUC (Multi-Class, OVR Weighted): {roc_auc:.4f} ± {auc_std:.4f}")
+            if config['debug']:
+               print(f"SL Test AUC (Multi-Class, OVR Weighted): {roc_auc:.4f} ± {auc_std:.4f}")
         except ValueError as e:
             print(f"WARNING: Could not compute Multi-Class AUC. {e}")
             roc_auc = -1.0 # Error value
@@ -246,7 +252,9 @@ def test_sl_multi(model, testloader, device, confusion_matrix_config, config):
         conf_matrix = multiclass_confusion_matrix(all_labels_cm_tensor, all_predicted_cm_tensor, num_classes=num_classes)
         
         if confusion_matrix_config.get('print_confusion_matrix', False):
-            print(f"Confusion Matrix (SL):\n{conf_matrix.tolist()}")
+            #print(f"Confusion Matrix (SL):\n{conf_matrix.tolist()}")
+            if config['debug']:
+                print(f"Confusion Matrix (SL):\n{conf_matrix.tolist()}")
 
         if confusion_matrix_config.get('confusion_matrix_folder'):
             folder = confusion_matrix_config['confusion_matrix_folder']
